@@ -352,7 +352,19 @@ def finish(src, out):
         out["derived22"] = True
 
     if not out.get("buy24") and not out.get("buy22"):
-        raise RuntimeError("page fetched, but no rate matched - patterns need a look")
+        # Say enough to tell "the site changed shape" apart from "we were served
+        # a different page than a browser at home gets" - a geo variant, a
+        # currency switch, or a shell with the content still to be rendered.
+        probe = body if isinstance(body, str) else str(body)[:0]
+        raise RuntimeError(
+            "page fetched (%d chars) but no rate matched - rupee:%s 'gold rate':%s "
+            "'22k':%s title:%s" % (
+                len(probe),
+                "₹" in probe,
+                "gold rate" in probe.lower(),
+                bool(re.search(r"22\s*k", probe, re.I)),
+                (re.search(r"(?i)<title>([^<]{0,60})", probe) or [None, "-"])[1]
+                if "<title" in probe.lower() else "-"))
     return out
 
 
