@@ -212,8 +212,9 @@ def _fetch_once(url, mode, timeout):
         if out.returncode != 0:
             raise RuntimeError("curl exit %d %s" % (out.returncode, out.stderr[:120]))
         body, status = _split_status(out.stdout)
-        if status in (401, 403, 429) or (status >= 400 and _looks_blocked(body)):
-            raise Refused("HTTP %d - the site refused this IP" % status)
+        if status in (401, 403, 423, 429) or (status >= 400 and _looks_blocked(body)):
+            hint = " ".join(body[:180].decode("utf-8", "replace").split())
+            raise Refused("HTTP %d - refused%s" % (status, (" :: " + hint) if hint else ""))
         if status >= 400:
             raise RuntimeError("HTTP %d" % status)
         if not body:
