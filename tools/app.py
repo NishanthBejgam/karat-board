@@ -68,6 +68,29 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 # of a couple of these sites - see fetch().
 CURL = "curl.exe" if os.name == "nt" else "curl"
 
+# Two of these merchants sit behind Cloudflare and refuse any datacenter IP, so
+# a scheduled build in the cloud cannot read them however honest the headers
+# are - it is the IP being judged, not the request. The way out is to have the
+# fetch leave from a residential connection instead of ours.
+#
+# KB_PROXY_URL is a template with {url} (percent-encoded) and {key}; the key
+# comes from KB_PROXY_KEY. Nothing is proxied until BOTH are set, and even then
+# only after a direct attempt has been refused - so a run from home spends
+# nothing, and a run in the cloud spends one credit per blocked merchant.
+PROXY_URL = os.environ.get("KB_PROXY_URL") or ""
+PROXY_KEY = os.environ.get("KB_PROXY_KEY") or ""
+
+
+def proxied(url):
+    """The same URL, routed so it arrives from somewhere that is welcome."""
+    if not (PROXY_URL and PROXY_KEY):
+        return None
+    return PROXY_URL.format(url=urllib.parse.quote(url, safe=""), key=PROXY_KEY)
+
+
+class Refused(RuntimeError):
+    """The site answered, and the answer was 'not you'."""
+
 # 24K is pure; 22K is 916 parts per thousand. The ratio between the two prices is
 # just the purity ratio, which is why a board that prints only one of them can
 # still be read - in either direction. A jeweller posts 22K and no 24K; a bullion
@@ -116,13 +139,28 @@ def now_iso():
 # --------------------------------------------------------------------------- #
 #  Fetching
 # --------------------------------------------------------------------------- #
-def fetch(url, mode="urllib", timeout=40):
+def fetch(url, mode="urllib", timeout=40, retry=True):
     """Return the raw bytes of a page.
+
+    If the site refuses this IP and a proxy is configured, the request is made
+    once more through it. That single retry is the whole difference between a
+    board that goes stale in the cloud and one that does not.
 
     Tanishq and Bhima sit behind bot walls that reject Python's TLS handshake
     however honest the headers look, but let Windows' own curl.exe straight
     through. So the fetch mode is per-merchant config, not a global choice.
     """
+    try:
+        return _fetch_once(url, mode, timeout)
+    except Refused:
+        route = proxied(url) if retry else None
+        if not route:
+            raise
+        print("  refused directly, retrying through the proxy")
+        return _fetch_once(route, mode, timeout + 30)
+
+
+def _fetch_once(url, mode, timeout):
     if mode == "curl":
         # The status code is appended after a marker: curl exits 0 on a 403, and
         # a Cloudflare block page parsed as HTML looks exactly like "the pattern
@@ -136,9 +174,10 @@ def fetch(url, mode="urllib", timeout=40):
         if out.returncode != 0:
             raise RuntimeError("curl exit %d %s" % (out.returncode, out.stderr[:120]))
         body, status = _split_status(out.stdout)
+        if status in (401, 403, 429) or (status >= 400 and _looks_blocked(body)):
+            raise Refused("HTTP %d - the site refused this IP" % status)
         if status >= 400:
-            raise RuntimeError("HTTP %d - the site refused us (a bot wall, most "
-                               "likely; this IP is not welcome)" % status)
+            raise RuntimeError("HTTP %d" % status)
         if not body:
             raise RuntimeError("empty response")
         return body
@@ -150,7 +189,15 @@ def fetch(url, mode="urllib", timeout=40):
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read()
     except urllib.error.HTTPError as exc:
-        raise RuntimeError("HTTP %d - the site refused us" % exc.code)
+        if exc.code in (401, 403, 429):
+            raise Refused("HTTP %d - the site refused this IP" % exc.code)
+        raise RuntimeError("HTTP %d" % exc.code)
+
+
+def _looks_blocked(body):
+    head = body[:4000].decode("utf-8", "replace").lower()
+    return any(m in head for m in
+               ("access blocked", "attention required", "cloudflare", "captcha"))
 
 
 _STATUS_MARK = b"__KB_HTTP__".decode()

@@ -1,6 +1,6 @@
 # Karat Board - the scheduled build that makes this app a website.
 #
-# Every half hour GitHub sweeps eight merchants, writes rates.json beside the
+# Every 15 minutes GitHub sweeps eight merchants, writes rates.json beside the
 # page and publishes the pair to Pages. Visitors get static files off a CDN; the
 # Python never runs on anyone's request, so there is no server and no bill.
 
@@ -48,6 +48,12 @@ jobs:
           # a residential connection, plus whatever is currently published.
           KB_SEED_FILE: seed/rates.json
           KB_SEED_URL: https://karatboard.yourcardjourney.store/rates.json
+          # Tanishq and Bhima refuse datacenter IPs outright. When a key is
+          # present the build retries just those two from a residential IP, so
+          # nothing here depends on anyone's PC being switched on. A credit is
+          # spent only on a merchant that actually refused us - two per run.
+          KB_PROXY_URL: "https://api.scrapingant.com/v2/general?url={url}&x-api-key={key}&browser=false&proxy_country=IN"
+          KB_PROXY_KEY: ${{ secrets.SCRAPING_KEY }}
         run: python tools/build_site.py _site
 
       # The custom domain has to travel with the artifact.
