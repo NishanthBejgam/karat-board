@@ -4,6 +4,7 @@
     "hardcoded in app.py - change a URL or a pattern here, hit Refresh, done.",
     "",
     "  site      the page a human opens (the tile links here)",
+    "  hideLink  true = no open-the-site button on this tile",
     "  source.adapter  how to read the numbers:",
     "     text_regex  strip the HTML to plain text, then match",
     "     raw_regex   match the raw response (for rates buried in embedded JSON)",
@@ -54,7 +55,8 @@
     },
     {
       "id": "kalyan",
-      "name": "Kalyan Jewellers (Candere)",
+      "name": "Kalyan Jewellers",
+      "hideLink": true,
       "short": "Kalyan",
       "site": "https://www.candere.com/gold-rate-today/hyderabad",
       "note": "Hyderabad board - swap the city in the URL to change market.",

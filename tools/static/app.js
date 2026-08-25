@@ -267,9 +267,9 @@ function card(m, best24) {
         ? "as of " + clock(r.fetched) + " · " + ago(r.fetched)
         : "no rate on the board yet"}</span>
       <span class="acts">
-        <button title="Open ${esc(m.short)}" data-act="open">
+        ${m.hideLink ? "" : `<button title="Open ${esc(m.short)}" data-act="open">
           <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M14 3h7v7h-2V6.4l-8.3 8.3-1.4-1.4L17.6 5H14V3ZM5 5h5v2H6.5v10.5H17V14h2v5.5H5V5Z"/></svg>
-        </button>
+        </button>`}
         ${STATIC ? "" : `<button title="Key in a rate by hand" data-act="manual">
           <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M4 20h4L18.5 9.5l-4-4L4 16v4Zm14.7-11.8 1.6-1.6a1.4 1.4 0 0 0 0-2l-2-2a1.4 1.4 0 0 0-2 0l-1.6 1.6 4 4Z"/></svg>
         </button>`}
@@ -289,7 +289,8 @@ function card(m, best24) {
       flipK24(el, r, now);
     };
   });
-  el.querySelector('[data-act="open"]').onclick = () => window.open(m.site, "_blank", "noopener");
+  const op = el.querySelector('[data-act="open"]');
+  if (op) op.onclick = () => window.open(m.site, "_blank", "noopener");
   const mn = el.querySelector('[data-act="manual"]');
   if (mn) mn.onclick = () => openManual(m);
   const rl = el.querySelector('[data-act="reload"]');

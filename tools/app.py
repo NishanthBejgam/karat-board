@@ -470,6 +470,7 @@ def board_state():
         rows.append({
             "id": mid, "name": m["name"], "short": m.get("short") or m["name"],
             "site": m["site"], "note": m.get("note") or "",
+            "hideLink": bool(m.get("hideLink")),
             "adapter": (m.get("source") or {}).get("adapter") or "link_only",
             "rate": rate,
             "spark": [h["buy24"] for h in hist[-24:] if h.get("buy24")],
