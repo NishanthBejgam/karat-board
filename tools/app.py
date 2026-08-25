@@ -81,11 +81,18 @@ PROXY_URL = os.environ.get("KB_PROXY_URL") or ""
 PROXY_KEY = os.environ.get("KB_PROXY_KEY") or ""
 
 
-def proxied(url):
-    """The same URL, routed so it arrives from somewhere that is welcome."""
+def proxied(url, extra=""):
+    """The same URL, routed so it arrives from somewhere that is welcome.
+
+    `extra` is appended verbatim - a merchant that refuses even the proxy's
+    datacenter pool can ask for `proxy_type=residential` in merchants.json.
+    """
     if not (PROXY_URL and PROXY_KEY):
         return None
-    return PROXY_URL.format(url=urllib.parse.quote(url, safe=""), key=PROXY_KEY)
+    route = PROXY_URL.format(url=urllib.parse.quote(url, safe=""), key=PROXY_KEY)
+    if extra:
+        route += ("&" if "?" in route else "?") + extra
+    return route
 
 
 class Refused(RuntimeError):
@@ -139,7 +146,7 @@ def now_iso():
 # --------------------------------------------------------------------------- #
 #  Fetching
 # --------------------------------------------------------------------------- #
-def fetch(url, mode="urllib", timeout=40, retry=True):
+def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params=""):
     """Return the raw bytes of a page.
 
     If the site refuses this IP and a proxy is configured, the request is made
@@ -153,7 +160,7 @@ def fetch(url, mode="urllib", timeout=40, retry=True):
     try:
         return _fetch_once(url, mode, timeout)
     except Refused:
-        route = proxied(url) if retry else None
+        route = proxied(url, proxy_params) if retry else None
         if not route:
             raise
         print("  refused directly, retrying through the proxy")
@@ -267,7 +274,8 @@ def read_merchant(m):
         out = read_socketio(src)
         return finish(src, out)
 
-    raw = fetch(src["url"], src.get("fetch") or "urllib")
+    raw = fetch(src["url"], src.get("fetch") or "urllib",
+                proxy_params=src.get("proxyParams") or "")
 
     if adapter == "text_regex":
         body = to_text(raw)

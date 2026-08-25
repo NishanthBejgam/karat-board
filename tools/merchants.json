@@ -5,6 +5,8 @@
     "",
     "  site      the page a human opens (the tile links here)",
     "  hideLink  true = no open-the-site button on this tile",
+    "  source.proxyParams  extra query for the fallback proxy, for a merchant",
+    "                      that refuses even its datacenter pool",
     "  source.adapter  how to read the numbers:",
     "     text_regex  strip the HTML to plain text, then match",
     "     raw_regex   match the raw response (for rates buried in embedded JSON)",
@@ -47,6 +49,7 @@
         "adapter": "text_regex",
         "fetch": "curl",
         "url": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
+        "proxyParams": "proxy_type=residential",
         "deriveK24": true,
         "buy": {
           "k22": { "pattern": "22\\s*Kt\\s*Gold\\s*Rate.{0,400}?1\\s*G\\s*₹\\s*([\\d,]+)", "divide": 1 }
