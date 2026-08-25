@@ -227,11 +227,12 @@ function card(m, best24) {
   if (r.ok && r.manual) { state = "ok"; why = "keyed in by hand"; }
   else if (r.ok) { state = "ok"; why = "read from the site"; }
   else if (r.stale) {
-    // The tile says how old the number is, so the reason can stay brief.
+    // Why it could not be re-read is our problem, not the reader's. The
+    // timestamp underneath already says how old the number is.
     state = "stale";
-    why = "last good read · " + humanErr(r.error || "could not re-read it");
+    why = "last good read";
   }
-  else if (r.error && !r.linkOnly) { state = "err"; why = humanErr(r.error); }
+  else if (r.error && !r.linkOnly) { state = "err"; why = "could not be read"; }
 
 
   // Buyback is always reckoned on 24K - purity is what a buyback is priced off.
@@ -266,7 +267,7 @@ function card(m, best24) {
 
     ${m.spark && m.spark.length > 2 ? spark(m.spark) : ""}
 
-    ${state === "err" ? `<div class="err-note">${esc(humanErr(r.error))}</div>` : ""}
+
 
     <div class="foot">
       <span class="when">${(r.buy24 || r.buy22)
