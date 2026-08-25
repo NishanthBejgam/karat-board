@@ -226,7 +226,11 @@ function card(m, best24) {
   let state = "off", why = "no automatic source";
   if (r.ok && r.manual) { state = "ok"; why = "keyed in by hand"; }
   else if (r.ok) { state = "ok"; why = "read from the site"; }
-  else if (r.stale) { state = "stale"; why = "last good read — " + (r.error || "site changed"); }
+  else if (r.stale) {
+    // The tile says how old the number is, so the reason can stay brief.
+    state = "stale";
+    why = "last good read · " + (r.error || "could not re-read it");
+  }
   else if (r.error && !r.linkOnly) { state = "err"; why = r.error; }
 
 

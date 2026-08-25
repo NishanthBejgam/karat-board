@@ -139,6 +139,27 @@ def save_board(board):
     os.replace(tmp, BOARD)
 
 
+def tidy_error(msg):
+    """A sentence a visitor can read, not the block page's HTML.
+
+    The full text still goes to the build log - that is where it is useful.
+    What lands on a tile has to be short and plain, because it is printed under
+    the merchant's name on a public page.
+    """
+    msg = msg.split("::")[0].strip()          # drop the quoted response body
+    msg = re.sub(r"<[^>]*>", " ", msg)        # and any markup that survived it
+    msg = " ".join(msg.split())
+    if re.search(r"(401|403|423|429)", msg) or "refused" in msg.lower():
+        return "the site refused us"
+    if msg.lower().startswith("http "):
+        return "the site answered with " + msg[5:].split()[0]
+    if "no rate matched" in msg:
+        return "read the page, but its rate has moved"
+    if "timed out" in msg.lower() or "timeout" in msg.lower():
+        return "the site did not answer in time"
+    return (msg[:90] + "…") if len(msg) > 90 else (msg or "could not be read")
+
+
 def now_iso():
     return datetime.now(IST).isoformat(timespec="seconds")
 
@@ -512,8 +533,9 @@ def refresh_all(only=None):
                     entry.update(got)
                     entry["ok"] = True
             except Exception as exc:
+                print("  %-9s FAILED %s" % (m["id"], str(exc)[:300]))
                 entry["ok"] = False
-                entry["error"] = str(exc)[:200]
+                entry["error"] = tidy_error(str(exc))
 
             with _lock:
                 board = load_board()
