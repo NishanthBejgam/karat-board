@@ -146,7 +146,8 @@ def now_iso():
 # --------------------------------------------------------------------------- #
 #  Fetching
 # --------------------------------------------------------------------------- #
-def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params=""):
+def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params="",
+          proxy_every=0, proxy_max=3):
     """Return the raw bytes of a page.
 
     If the site refuses this IP and a proxy is configured, the request is made
@@ -162,6 +163,14 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params=""):
     except Refused:
         if not (retry and PROXY_URL and PROXY_KEY):
             raise
+        # Proxy credits are not all priced alike: an ordinary fetch is about a
+        # credit, a residential one with a browser behind it nearer twenty-five.
+        # A merchant that needs the dear route can be rationed to every Nth hour
+        # so the free allowance covers the month.
+        if proxy_every:
+            hour = datetime.now(timezone.utc).hour
+            if hour % int(proxy_every):
+                raise
 
     # Refused, and a proxy is available. Sites differ in how hard they are:
     # Bhima is happy with the proxy's ordinary pool, Tanishq refuses that too and
@@ -185,7 +194,7 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params=""):
         # at three attempts a merchant: past that the odds stop improving, and
         # every attempt costs both a credit and about a minute of build time.
         for attempt in range(2):
-            if spent >= 3:
+            if spent >= proxy_max:
                 break
             spent += 1
             try:
@@ -313,7 +322,9 @@ def read_merchant(m):
         return finish(src, out)
 
     raw = fetch(src["url"], src.get("fetch") or "urllib",
-                proxy_params=src.get("proxyParams") or "")
+                proxy_params=src.get("proxyParams") or "",
+                proxy_every=src.get("proxyEvery") or 0,
+                proxy_max=int(src.get("proxyMaxAttempts") or 3))
 
     if adapter == "text_regex":
         body = to_text(raw)
