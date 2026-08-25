@@ -128,10 +128,12 @@ function paint() {
 
   const busy = STATE.refreshing;
   $("status").querySelector(".dot").className = "dot" + (busy ? " busy" : "");
+  const every = STATE.refreshMinutes >= 60 && STATE.refreshMinutes % 60 === 0
+    ? (STATE.refreshMinutes / 60) + (STATE.refreshMinutes === 60 ? " hour" : " hours")
+    : STATE.refreshMinutes + " minutes";
   const line = busy ? "Reading merchants…"
     : "Updated " + ago(STATE.lastRefresh) +
-      (STATIC ? " · refreshes every " : " · re-reads itself every ")
-      + STATE.refreshMinutes + " minutes";
+      (STATIC ? " · refreshes every " : " · re-reads itself every ") + every;
   $("status").title = line;
   $("statusText").textContent = line;
   $("refreshBtn").disabled = busy;

@@ -49,7 +49,7 @@
         "adapter": "text_regex",
         "fetch": "curl",
         "url": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
-        "proxyParams": "proxy_type=residential",
+        "proxyParams": "proxy_type=residential&browser=true",
         "deriveK24": true,
         "buy": {
           "k22": { "pattern": "22\\s*Kt\\s*Gold\\s*Rate.{0,400}?1\\s*G\\s*₹\\s*([\\d,]+)", "divide": 1 }
