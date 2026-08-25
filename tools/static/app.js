@@ -229,9 +229,9 @@ function card(m, best24) {
   else if (r.stale) {
     // The tile says how old the number is, so the reason can stay brief.
     state = "stale";
-    why = "last good read · " + (r.error || "could not re-read it");
+    why = "last good read · " + humanErr(r.error || "could not re-read it");
   }
-  else if (r.error && !r.linkOnly) { state = "err"; why = r.error; }
+  else if (r.error && !r.linkOnly) { state = "err"; why = humanErr(r.error); }
 
 
   // Buyback is always reckoned on 24K - purity is what a buyback is priced off.
@@ -266,7 +266,7 @@ function card(m, best24) {
 
     ${m.spark && m.spark.length > 2 ? spark(m.spark) : ""}
 
-    ${state === "err" ? `<div class="err-note">${esc(r.error || "")}</div>` : ""}
+    ${state === "err" ? `<div class="err-note">${esc(humanErr(r.error))}</div>` : ""}
 
     <div class="foot">
       <span class="when">${(r.buy24 || r.buy22)
@@ -403,6 +403,15 @@ function initials(name) {
   return name.replace(/[^A-Za-z ]/g, "").split(/\s+/).filter(Boolean)
     .slice(0, 2).map((w) => w[0].toUpperCase()).join("");
 }
+/* Whatever the server sends, a tile shows one short plain line. The server
+   already tidies these, but a page on the open internet should not depend on
+   that being true of every future error. */
+function humanErr(msg) {
+  const flat = String(msg || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  if (!flat) return "could not be read";
+  return flat.length > 110 ? flat.slice(0, 110).trimEnd() + "…" : flat;
+}
+
 function esc(s) {
   return String(s == null ? "" : s).replace(/[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
