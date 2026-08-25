@@ -8,8 +8,10 @@ name: Build and publish
 
 on:
   schedule:
-    # Best-effort: GitHub queues these, so expect 15-30 minutes in practice.
-    - cron: "*/15 * * * *"
+    # Every half hour. Most of these merchants set one rate each morning and
+    # leave it; only Aspect (spot plus a premium) actually moves minute to
+    # minute. Best-effort anyway - GitHub queues cron behind paid work.
+    - cron: "*/30 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
@@ -38,7 +40,7 @@ jobs:
 
       - name: Sweep the merchants and build the page
         env:
-          KB_EVERY: "15"                 # what the page tells visitors
+          KB_EVERY: "30"                 # what the page tells visitors
           KB_STATE: ${{ runner.temp }}/board.json
           # A runner is blank every time, and Cloudflare refuses Tanishq and
           # Bhima from any datacenter IP. Seed from what is already known so
