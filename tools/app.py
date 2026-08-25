@@ -337,10 +337,10 @@ def read_merchant(m):
             if val:
                 out[side + karat[1:]] = round(val, 2)
 
-    return finish(src, out)
+    return finish(src, out, body)
 
 
-def finish(src, out):
+def finish(src, out, body=None):
     """Fill in the purity a merchant does not print, and refuse an empty read."""
     if src.get("deriveK24") and out.get("buy22") and not out.get("buy24"):
         out["buy24"] = round(out["buy22"] * K24_FROM_K22, 2)
@@ -355,7 +355,7 @@ def finish(src, out):
         # Say enough to tell "the site changed shape" apart from "we were served
         # a different page than a browser at home gets" - a geo variant, a
         # currency switch, or a shell with the content still to be rendered.
-        probe = body if isinstance(body, str) else str(body)[:0]
+        probe = body if isinstance(body, str) else ("" if body is None else str(body))
         raise RuntimeError(
             "page fetched (%d chars) but no rate matched - rupee:%s 'gold rate':%s "
             "'22k':%s title:%s" % (
