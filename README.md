@@ -44,7 +44,7 @@ published site.
 return a hard 403 to GitHub's runners while the same request from a home
 connection is fine. Each build therefore seeds itself from `seed/rates.json`
 and the published board, so those two keep their last good number, turn amber,
-and show the time it was really read. The other six refresh every 15 minutes.
+and show the time it was really read. The other six refresh every 30 minutes.
 
 To refresh those two, sweep from a residential connection and commit the result:
 
