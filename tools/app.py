@@ -181,11 +181,11 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params=""):
             continue
         seen.add(rung)
         # A 423 means the proxy's exit IP or browser was the one refused, not
-        # us - the next call rotates. So the same rung is worth a second go
-        # before moving on. Capped at six attempts a merchant, because every
-        # one of them spends a credit.
+        # us, and the next call rotates - so a rung is worth a second go. Capped
+        # at three attempts a merchant: past that the odds stop improving, and
+        # every attempt costs both a credit and about a minute of build time.
         for attempt in range(2):
-            if spent >= 6:
+            if spent >= 3:
                 break
             spent += 1
             try:
