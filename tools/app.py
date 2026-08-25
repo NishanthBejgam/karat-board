@@ -170,20 +170,31 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params=""):
     # that answers, and say which one did so the cheap rung can be made default.
     ladder = [r for r in (proxy_params, "proxy_type=residential",
                           "proxy_type=residential&browser=true") if r is not None]
-    seen = set()
-    last = None
+    seen, last, spent = set(), None, 0
     for rung in ladder:
         if rung in seen:
             continue
         seen.add(rung)
-        try:
-            body = _fetch_once(proxied(url, rung), mode, timeout + 45)
-            print("  refused directly - through the proxy%s" % (" (%s)" % rung if rung else ""))
-            return body
-        except Refused as exc:
-            last = exc
-        except Exception as exc:
-            last = exc
+        # A 423 means the proxy's exit IP was the one refused, not us - the next
+        # call rotates to a different one, so the same rung is worth a second
+        # go before climbing to a dearer one. Capped, because every attempt is
+        # a credit.
+        for attempt in range(2):
+            if spent >= 4:
+                break
+            spent += 1
+            try:
+                body = _fetch_once(proxied(url, rung), mode, timeout + 45)
+                print("  refused directly - through the proxy%s%s" % (
+                    " (%s)" % rung if rung else "",
+                    " on retry" if attempt else ""))
+                return body
+            except Refused as exc:
+                last = exc
+                time.sleep(2)
+            except Exception as exc:
+                last = exc
+                break
     raise last or Refused("refused, and every proxy route failed")
 
 
