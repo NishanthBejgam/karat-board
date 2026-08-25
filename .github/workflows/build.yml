@@ -53,7 +53,7 @@ jobs:
           # present the build retries just those two from a residential IP, so
           # nothing here depends on anyone's PC being switched on. A credit is
           # spent only on a merchant that actually refused us - two per run.
-          KB_PROXY_URL: "https://api.scrapingant.com/v2/general?url={url}&x-api-key={key}&browser=false&proxy_country=IN"
+          KB_PROXY_URL: "https://api.scrapingant.com/v2/general?url={url}&x-api-key={key}&proxy_country=IN"
           KB_PROXY_KEY: ${{ secrets.SCRAPING_KEY }}
         run: python tools/build_site.py _site
 

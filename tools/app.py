@@ -216,7 +216,8 @@ def _fetch_once(url, mode, timeout):
             hint = " ".join(body[:180].decode("utf-8", "replace").split())
             raise Refused("HTTP %d - refused%s" % (status, (" :: " + hint) if hint else ""))
         if status >= 400:
-            raise RuntimeError("HTTP %d" % status)
+            raise RuntimeError("HTTP %d :: %s" % (
+                status, " ".join(body[:180].decode("utf-8", "replace").split())))
         if not body:
             raise RuntimeError("empty response")
         return body

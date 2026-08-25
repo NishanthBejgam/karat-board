@@ -152,6 +152,7 @@
         "adapter": "raw_regex",
         "fetch": "curl",
         "url": "https://www.bhimagold.com/",
+        "proxyParams": "browser=false",
         "buy": {
           "k24": { "pattern": "Online Gold Rate 24 KT \\(999\\)\",\"rate\":\"₹([\\d,\\.]+)/g", "divide": 1 },
           "k22": { "pattern": "Online Gold Rate 22 KT \\(916\\)\",\"rate\":\"₹([\\d,\\.]+)/g", "divide": 1 }
