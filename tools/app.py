@@ -168,19 +168,24 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params=""):
     # wants a residential IP, and some want a real browser behind it. Climb until
     # one works rather than guessing - each rung costs more, so stop at the first
     # that answers, and say which one did so the cheap rung can be made default.
-    ladder = [r for r in (proxy_params, "proxy_type=residential",
+    # Tanishq detects the proxy's browser some of the time and lets it through
+    # the rest, so success is a matter of trying a few shapes rather than
+    # finding the one right answer. Cheapest first.
+    ladder = [r for r in (proxy_params,
+                          "proxy_type=residential&browser=false",
+                          "proxy_type=residential",
                           "proxy_type=residential&browser=true") if r is not None]
     seen, last, spent = set(), None, 0
     for rung in ladder:
         if rung in seen:
             continue
         seen.add(rung)
-        # A 423 means the proxy's exit IP was the one refused, not us - the next
-        # call rotates to a different one, so the same rung is worth a second
-        # go before climbing to a dearer one. Capped, because every attempt is
-        # a credit.
+        # A 423 means the proxy's exit IP or browser was the one refused, not
+        # us - the next call rotates. So the same rung is worth a second go
+        # before moving on. Capped at six attempts a merchant, because every
+        # one of them spends a credit.
         for attempt in range(2):
-            if spent >= 4:
+            if spent >= 6:
                 break
             spent += 1
             try:
