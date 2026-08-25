@@ -19,6 +19,8 @@
   <meta name="twitter:description" content="Eight jewellers' gold rates on one screen, refreshed every 15 minutes." />
 
   <link rel="icon" href="favicon.svg" />
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
   <link rel="stylesheet" href="style.css" />
   <style>
     /* Board-specific bits, built on the shared design tokens. */
@@ -175,7 +177,7 @@
     @media (max-width: 560px) {
       .topbar-inner { padding: 10px 14px; gap: 8px; }
       .brand-mark { width: 38px; height: 38px; border-radius: 11px; }
-      .brand-name { font-size: 17px; }
+      .brand-word { font-size: 19px; }
       .wrap { padding: 0 14px 32px; }
       .heads { gap: 10px; margin: 16px 0 14px; }
       .board { grid-template-columns: 1fr; }
@@ -212,8 +214,8 @@
           </svg>
         </span>
         <div class="brand-text">
-          <small class="brand-tag">YOUR CARD JOURNEY</small>
-          <span class="brand-name">Karat Board</span>
+          <span class="brand-word">Karat<em>Board</em></span>
+          <span class="brand-tag">Eight jewellers · One screen</span>
         </div>
       </div>
       <div class="topbar-actions">

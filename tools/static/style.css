@@ -39,7 +39,9 @@
   --shadow-2: 0 2px 6px rgba(70,50,15,.10), 0 8px 20px rgba(70,50,15,.10);
   --shadow-3: 0 12px 34px rgba(70,50,15,.18);
   --r-lg: 24px; --r-md: 16px; --r-sm: 12px;
-  --font: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  /* Inter, from the same source the YourCardJourney store loads it from - this
+     board is part of that family and should not be set in a different face. */
+  --font: "Inter", "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
   --mono: "Cascadia Code", "SF Mono", Consolas, ui-monospace, monospace;
 }
 html[data-theme="dark"] {
@@ -125,7 +127,11 @@ html[data-theme="dark"] .topbar { box-shadow: 0 6px 20px -14px #000; }
   max-width: 1240px; margin: 0 auto; padding: 12px 24px;
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
 }
-.brand { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
+.brand {
+  display: flex; align-items: center; gap: 13px; flex: 0 0 auto;
+  transition: transform .3s cubic-bezier(.22, 1, .36, 1);
+}
+.brand:hover { transform: translateY(-1px); }
 .brand-mark {
   width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center;
   color: #fff; background: var(--brand-grad);
@@ -133,8 +139,8 @@ html[data-theme="dark"] .topbar { box-shadow: 0 6px 20px -14px #000; }
   transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
 }
 .brand:hover .brand-mark {
-  transform: translateY(-1px); filter: brightness(1.06);
-  box-shadow: 0 10px 24px var(--brand-glow), inset 0 1px 0 rgba(255,255,255,.5);
+  transform: translateY(-1px) scale(1.03); filter: brightness(1.06);
+  box-shadow: 0 12px 24px -6px var(--brand-glow), inset 0 1px 0 rgba(255,255,255,.5);
 }
 .brand:focus-visible { outline: none; }
 .brand:focus-visible .brand-mark { outline: 2px solid var(--m3-primary); outline-offset: 3px; }
@@ -151,12 +157,24 @@ html[data-theme="dark"] .topbar { box-shadow: 0 6px 20px -14px #000; }
   to   { transform: none; opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) { .brand:hover .an-bar { animation: none; } }
-.brand-text { display: flex; flex-direction: column; line-height: 1.15; }
-.brand-tag {
-  font-size: 10px; font-weight: 800; letter-spacing: 1.6px;
-  color: var(--m3-on-surface-var); text-transform: uppercase;
+/* Wordmark - the store's lockup, in gold. Name first and tight (780 at
+   -0.032em), the second half dropped to a quieter weight and colour, and a
+   micro-tagline underneath rather than an eyebrow above. Same rhythm as
+   "YourCardJourney / One place - Every card tool". */
+.brand-text { display: flex; flex-direction: column; gap: 3px; }
+.brand-word {
+  font-size: 21px; font-weight: 780; letter-spacing: -.032em; line-height: 1;
+  color: var(--m3-on-surface); white-space: nowrap;
 }
-.brand-name { font-size: 19px; font-weight: 700; }
+.brand-word em {
+  font-style: normal; font-weight: 640; color: var(--m3-on-surface-var);
+  transition: color .35s cubic-bezier(.22, 1, .36, 1);
+}
+.brand:hover .brand-word em { color: var(--m3-primary); }
+.brand-tag {
+  font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--m3-on-surface-var); white-space: nowrap;
+}
 .topbar-actions { display: flex; align-items: center; gap: 10px; }
 
 /* ---- Credit ---- */
