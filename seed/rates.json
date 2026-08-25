@@ -9,7 +9,7 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-25T19:21:48+05:30",
+    "fetched": "2026-08-25T20:48:01+05:30",
     "buy24": 16375.0,
     "buy22": 15010.0,
     "ok": true
@@ -27,7 +27,7 @@
    "hideLink": false,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-25T19:21:50+05:30",
+    "fetched": "2026-08-25T20:48:02+05:30",
     "buy22": 15055.0,
     "buy24": 16423.64,
     "derived24": true,
@@ -46,7 +46,25 @@
    "hideLink": true,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-25T19:21:51+05:30",
+    "fetched": "2026-08-25T20:48:03+05:30",
+    "buy24": 16386.0,
+    "buy22": 15010.0,
+    "ok": true
+   },
+   "spark": [
+    16386.0
+   ]
+  },
+  {
+   "id": "lalithaa",
+   "name": "Lalithaa Jewellery",
+   "short": "Lalithaa",
+   "site": "https://www.lalithaajewellery.com/",
+   "note": "Their own pricing API. Telangana board - swap state_id for another state (see /public/states).",
+   "hideLink": false,
+   "adapter": "raw_regex",
+   "rate": {
+    "fetched": "2026-08-25T20:48:04+05:30",
     "buy24": 16386.0,
     "buy22": 15010.0,
     "ok": true
@@ -64,7 +82,7 @@
    "hideLink": false,
    "adapter": "pdf_regex",
    "rate": {
-    "fetched": "2026-08-25T19:21:52+05:30",
+    "fetched": "2026-08-25T20:48:05+05:30",
     "buy24": 17641.75,
     "buy22": 16288.83,
     "ok": true
@@ -82,14 +100,14 @@
    "hideLink": false,
    "adapter": "socketio_livedata",
    "rate": {
-    "fetched": "2026-08-25T19:21:53+05:30",
-    "buy24": 16314.8,
-    "buy22": 14955.23,
+    "fetched": "2026-08-25T20:48:08+05:30",
+    "buy24": 16394.9,
+    "buy22": 15028.66,
     "derived22": true,
     "ok": true
    },
    "spark": [
-    16314.8
+    16394.9
    ]
   },
   {
@@ -101,7 +119,7 @@
    "hideLink": false,
    "adapter": "pairs_json",
    "rate": {
-    "fetched": "2026-08-25T19:21:55+05:30",
+    "fetched": "2026-08-25T20:48:11+05:30",
     "buy24": 16422.0,
     "buy22": 15215.0,
     "sell22": 15020.0,
@@ -120,7 +138,7 @@
    "hideLink": false,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-25T19:21:56+05:30",
+    "fetched": "2026-08-25T20:48:12+05:30",
     "buy24": 16189.0,
     "buy22": 14984.0,
     "ok": true
@@ -138,7 +156,7 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-25T19:21:57+05:30",
+    "fetched": "2026-08-25T20:48:13+05:30",
     "buy24": 16379.0,
     "buy22": 13999.0,
     "ok": true
@@ -148,10 +166,10 @@
    ]
   }
  ],
- "lastRefresh": "2026-08-25T19:21:58+05:30",
+ "lastRefresh": "2026-08-25T20:48:14+05:30",
  "refreshMinutes": 15,
  "refreshing": false,
- "now": "2026-08-25T19:21:58+05:30",
+ "now": "2026-08-25T20:48:14+05:30",
  "static": true,
- "builtAt": "2026-08-25T19:21:58+05:30"
+ "builtAt": "2026-08-25T20:48:14+05:30"
 }

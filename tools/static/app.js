@@ -184,6 +184,10 @@ const MARKS = {
   kalyan: `<path d="M6.4 3.6v16.8"/>
            <path d="M6.4 13.6C12.6 11 17.4 6.9 19.1 3.1"/>
            <path d="M7.1 13.1C12 15.3 17.5 17.8 19.5 21.2" opacity=".55"/>`,
+  // the crown over the script wordmark
+  lalithaa: `<path d="M6.5 11.4 8.1 7.1l3.9 2.7 3.9-2.7 1.6 4.3z"/>
+             <path d="M10.1 13.6v4.1c0 1 .7 1.6 1.9 1.6h3.9"/>
+             <circle cx="12" cy="4.6" r="1.15" fill="currentColor" stroke="none"/>`,
   // the lettered coin rim
   mmtc: `<circle cx="12" cy="12" r="9.3"/><circle cx="12" cy="12" r="4.5" opacity=".9"/>
          <g opacity=".5" stroke-width="1.5">

@@ -79,6 +79,22 @@
       }
     },
     {
+      "id": "lalithaa",
+      "name": "Lalithaa Jewellery",
+      "short": "Lalithaa",
+      "site": "https://www.lalithaajewellery.com/",
+      "note": "Their own pricing API. Telangana board - swap state_id for another state (see /public/states).",
+      "source": {
+        "adapter": "raw_regex",
+        "fetch": "urllib",
+        "url": "https://api.lalithaajewellery.com/public/pricings/latest?state_id=2ce06e73-3310-4ea1-9c4d-fd707e4e5efd",
+        "buy": {
+          "k24": { "pattern": "\"gold_24kt\"[^}]*?\"price\":\\s*([\\d.]+)", "divide": 1 },
+          "k22": { "pattern": "\"gold_22kt\"[^}]*?\"price\":\\s*([\\d.]+)", "divide": 1 }
+        }
+      }
+    },
+    {
       "id": "mmtc",
       "name": "MMTC-PAMP",
       "short": "MMTC-PAMP",
