@@ -160,11 +160,31 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params=""):
     try:
         return _fetch_once(url, mode, timeout)
     except Refused:
-        route = proxied(url, proxy_params) if retry else None
-        if not route:
+        if not (retry and PROXY_URL and PROXY_KEY):
             raise
-        print("  refused directly, retrying through the proxy")
-        return _fetch_once(route, mode, timeout + 30)
+
+    # Refused, and a proxy is available. Sites differ in how hard they are:
+    # Bhima is happy with the proxy's ordinary pool, Tanishq refuses that too and
+    # wants a residential IP, and some want a real browser behind it. Climb until
+    # one works rather than guessing - each rung costs more, so stop at the first
+    # that answers, and say which one did so the cheap rung can be made default.
+    ladder = [r for r in (proxy_params, "proxy_type=residential",
+                          "proxy_type=residential&browser=true") if r is not None]
+    seen = set()
+    last = None
+    for rung in ladder:
+        if rung in seen:
+            continue
+        seen.add(rung)
+        try:
+            body = _fetch_once(proxied(url, rung), mode, timeout + 45)
+            print("  refused directly - through the proxy%s" % (" (%s)" % rung if rung else ""))
+            return body
+        except Refused as exc:
+            last = exc
+        except Exception as exc:
+            last = exc
+    raise last or Refused("refused, and every proxy route failed")
 
 
 def _fetch_once(url, mode, timeout):
