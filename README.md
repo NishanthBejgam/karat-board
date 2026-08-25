@@ -17,7 +17,7 @@ it on one board with the cheapest called out.
 The sweep runs on a schedule, not on a visitor's request:
 
 ```
-GitHub Actions, every 15 min
+GitHub Actions, every 30 min
   └─ python tools/build_site.py _site ──> 8 merchants ──> _site/rates.json
                                                               │
                         karatboard.yourcardjourney.store <────┘   static, free
