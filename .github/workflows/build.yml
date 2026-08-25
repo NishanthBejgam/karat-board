@@ -1,0 +1,66 @@
+# Karat Board - the scheduled build that makes this app a website.
+#
+# Every 15 minutes GitHub sweeps eight merchants, writes rates.json beside the
+# page and publishes the pair to Pages. Visitors get static files off a CDN; the
+# Python never runs on anyone's request, so there is no server and no bill.
+
+name: Build and publish
+
+on:
+  schedule:
+    # Best-effort: GitHub queues these, so expect 15-30 minutes in practice.
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Only MMTC-PAMP's price-list PDF needs a third-party library.
+      - run: pip install --quiet pypdf
+
+      - name: Sweep the merchants and build the page
+        env:
+          KB_EVERY: "15"                 # what the page tells visitors
+          KB_STATE: ${{ runner.temp }}/board.json
+          # A runner is blank every time, and Cloudflare refuses Tanishq and
+          # Bhima from any datacenter IP. Seed from what is already known so
+          # those two age visibly instead of vanishing: the sweep committed from
+          # a residential connection, plus whatever is currently published.
+          KB_SEED_FILE: seed/rates.json
+          KB_SEED_URL: https://karatboard.yourcardjourney.store/rates.json
+        run: python tools/build_site.py _site
+
+      # The custom domain has to travel with the artifact.
+      - run: cp CNAME _site/CNAME
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site               # only the page - tools/ stays unpublished
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,4 @@
+_site/
+board.json
+board.json.tmp
+__pycache__/
