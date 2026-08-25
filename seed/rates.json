@@ -6,9 +6,10 @@
    "short": "Malabar",
    "site": "https://malabargoldanddiamonds.com/in/pan-india/en/live-gold-rate.html",
    "note": "One India One Gold Rate, straight off the getMetalRate GraphQL call the page itself makes.",
+   "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-25T17:59:49+05:30",
+    "fetched": "2026-08-25T19:21:48+05:30",
     "buy24": 16375.0,
     "buy22": 15010.0,
     "ok": true
@@ -23,9 +24,10 @@
    "short": "Tanishq",
    "site": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
    "note": "Tanishq publishes 22K only; 24K is derived.",
+   "hideLink": false,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-25T17:59:50+05:30",
+    "fetched": "2026-08-25T19:21:50+05:30",
     "buy22": 15055.0,
     "buy24": 16423.64,
     "derived24": true,
@@ -37,13 +39,14 @@
   },
   {
    "id": "kalyan",
-   "name": "Kalyan Jewellers (Candere)",
+   "name": "Kalyan Jewellers",
    "short": "Kalyan",
    "site": "https://www.candere.com/gold-rate-today/hyderabad",
    "note": "Hyderabad board - swap the city in the URL to change market.",
+   "hideLink": true,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-25T17:59:51+05:30",
+    "fetched": "2026-08-25T19:21:51+05:30",
     "buy24": 16386.0,
     "buy22": 15010.0,
     "ok": true
@@ -58,9 +61,10 @@
    "short": "MMTC-PAMP",
    "site": "https://www.mmtcpamp.com/",
    "note": "Minted product price (premium in, taxes out) - sits above spot.",
+   "hideLink": false,
    "adapter": "pdf_regex",
    "rate": {
-    "fetched": "2026-08-25T17:59:52+05:30",
+    "fetched": "2026-08-25T19:21:52+05:30",
     "buy24": 17641.75,
     "buy22": 16288.83,
     "ok": true
@@ -75,16 +79,17 @@
    "short": "Aspect",
    "site": "https://aspectbullion.com",
    "note": "The live ticker itself: Ask on the gold symbol plus Aspect's own published premium, per 10 g. 22K is derived.",
+   "hideLink": false,
    "adapter": "socketio_livedata",
    "rate": {
-    "fetched": "2026-08-25T17:59:53+05:30",
-    "buy24": 16424.2,
-    "buy22": 15055.52,
+    "fetched": "2026-08-25T19:21:53+05:30",
+    "buy24": 16314.8,
+    "buy22": 14955.23,
     "derived22": true,
     "ok": true
    },
    "spark": [
-    16424.2
+    16314.8
    ]
   },
   {
@@ -93,9 +98,10 @@
    "short": "BRPL",
    "site": "https://bangalorerefinery.com/pages/todays-rates",
    "note": "Wholesale, 18% GST extra. The only board here that prints a buyback.",
+   "hideLink": false,
    "adapter": "pairs_json",
    "rate": {
-    "fetched": "2026-08-25T17:59:55+05:30",
+    "fetched": "2026-08-25T19:21:55+05:30",
     "buy24": 16422.0,
     "buy22": 15215.0,
     "sell22": 15020.0,
@@ -111,9 +117,10 @@
    "short": "PNG",
    "site": "https://pngjewellers.com",
    "note": "Rate applies to online purchases.",
+   "hideLink": false,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-25T17:59:56+05:30",
+    "fetched": "2026-08-25T19:21:56+05:30",
     "buy24": 16189.0,
     "buy22": 14984.0,
     "ok": true
@@ -128,9 +135,10 @@
    "short": "Bhima",
    "site": "https://bhimagold.com",
    "note": "Online gold rate as published on the storefront.",
+   "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-25T17:59:57+05:30",
+    "fetched": "2026-08-25T19:21:57+05:30",
     "buy24": 16379.0,
     "buy22": 13999.0,
     "ok": true
@@ -140,10 +148,10 @@
    ]
   }
  ],
- "lastRefresh": "2026-08-25T17:59:57+05:30",
+ "lastRefresh": "2026-08-25T19:21:58+05:30",
  "refreshMinutes": 15,
  "refreshing": false,
- "now": "2026-08-25T17:59:58+05:30",
+ "now": "2026-08-25T19:21:58+05:30",
  "static": true,
- "builtAt": "2026-08-25T17:59:58+05:30"
+ "builtAt": "2026-08-25T19:21:58+05:30"
 }
