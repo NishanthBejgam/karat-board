@@ -31,8 +31,23 @@ jobs:
                    "$label" "$code" "$size" "${rate:--}" "$rupees" "$dollars"
           }
 
-          probe "IN  residential+browser (control)" general "proxy_country=IN&proxy_type=residential&browser=true"
-          probe "US  residential+browser"           general "proxy_country=US&proxy_type=residential&browser=true"
-          probe "SG  residential+browser"           general "proxy_country=SG&proxy_type=residential&browser=true"
-          probe "GB  residential+browser"           general "proxy_country=GB&proxy_type=residential&browser=true"
-          probe "IN  extended endpoint"            extended "proxy_country=IN&proxy_type=residential&browser=true"
+          probe "GB residential+browser" general "proxy_country=GB&proxy_type=residential&browser=true"
+
+          echo "=== what the GB fetch actually contains ==="
+          python3 - <<'PY'
+import re, html
+raw = open("/tmp/o", encoding="utf-8", errors="replace").read()
+t = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</>", " ", raw)
+t = re.sub(r"\s+", " ", html.unescape(re.sub(r"(?s)<[^>]+>", " ", t)))
+print("title:", (re.search(r"(?is)<title>([^<]*)", raw) or ["","-"])[1][:70])
+print("chars of text:", len(t))
+hits = 0
+for m in re.finditer(r"(?i)(22\s*Kt|24\s*Kt|Gold Rate)", t):
+    seg = t[max(0, m.start()-80):m.start()+220].strip()
+    if re.search(r"\d{4,}", seg):
+        print("  ::", seg[:230]); hits += 1
+    if hits >= 4:
+        break
+if not hits:
+    print("  no rate-looking text found")
+PY
