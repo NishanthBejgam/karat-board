@@ -37,8 +37,14 @@
         "fetch": "curl",
         "url": "https://www.malabargoldanddiamonds.com/graphql-magento?query=query%20getMetalRate(%24filter%3A%20MetalRateFilterInput)%20%7B%20getMetalRate(filter%3A%20%24filter)%20%7B%20items%20%7B%20entry_date%20entry_time%20purity%20unit%20rate%20%7D%20%7D%20%7D&variables=%7B%22filter%22%3A%7B%22metal_type%22%3A%22gold%22%2C%22country%22%3A%22India%22%7D%7D",
         "buy": {
-          "k24": { "pattern": "\"purity\":\"24k\",\"unit\":\"G\",\"rate\":\"([\\d.]+)\"", "divide": 1 },
-          "k22": { "pattern": "\"purity\":\"22k\",\"unit\":\"G\",\"rate\":\"([\\d.]+)\"", "divide": 1 }
+          "k24": {
+            "pattern": "\"purity\":\"24k\",\"unit\":\"G\",\"rate\":\"([\\d.]+)\"",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "\"purity\":\"22k\",\"unit\":\"G\",\"rate\":\"([\\d.]+)\"",
+            "divide": 1
+          }
         }
       }
     },
@@ -47,17 +53,23 @@
       "name": "Tanishq",
       "short": "Tanishq",
       "site": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
-      "note": "Tanishq publishes 22K only; 24K is derived.",
+      "note": "Both purities come straight off the rate page's data attributes.",
       "source": {
-        "adapter": "text_regex",
+        "adapter": "raw_regex",
         "fetch": "curl",
         "url": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
         "proxyParams": "proxy_country=GB&proxy_type=residential&browser=true",
         "proxyAfterHours": 0,
         "proxyMaxAttempts": 2,
-        "deriveK24": true,
         "buy": {
-          "k22": { "pattern": "22\\s*Kt\\s*Gold\\s*Rate.{0,400}?1\\s*G\\s*₹\\s*([\\d,]+)", "divide": 1 }
+          "k24": {
+            "pattern": "data-goldrate24kt=\"([\\d.]+)\"",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "data-goldrate22kt=\"([\\d.]+)\"",
+            "divide": 1
+          }
         }
       }
     },
@@ -73,8 +85,14 @@
         "fetch": "curl",
         "url": "https://www.candere.com/gold-rate-today/hyderabad",
         "buy": {
-          "k24": { "pattern": "₹([\\d,]+)\\s*/10gm\\s*24\\s*Karat", "divide": 10 },
-          "k22": { "pattern": "₹([\\d,]+)\\s*/10gm\\s*22\\s*Karat", "divide": 10 }
+          "k24": {
+            "pattern": "₹([\\d,]+)\\s*/10gm\\s*24\\s*Karat",
+            "divide": 10
+          },
+          "k22": {
+            "pattern": "₹([\\d,]+)\\s*/10gm\\s*22\\s*Karat",
+            "divide": 10
+          }
         }
       }
     },
@@ -89,8 +107,14 @@
         "fetch": "urllib",
         "url": "https://api.lalithaajewellery.com/public/pricings/latest?state_id=2ce06e73-3310-4ea1-9c4d-fd707e4e5efd",
         "buy": {
-          "k24": { "pattern": "\"gold_24kt\"[^}]*?\"price\":\\s*([\\d.]+)", "divide": 1 },
-          "k22": { "pattern": "\"gold_22kt\"[^}]*?\"price\":\\s*([\\d.]+)", "divide": 1 }
+          "k24": {
+            "pattern": "\"gold_24kt\"[^}]*?\"price\":\\s*([\\d.]+)",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "\"gold_22kt\"[^}]*?\"price\":\\s*([\\d.]+)",
+            "divide": 1
+          }
         }
       }
     },
@@ -105,8 +129,14 @@
         "fetch": "urllib",
         "url": "https://cem-cms-data.s3.ap-south-1.amazonaws.com/today_price_list.pdf",
         "buy": {
-          "k24": { "pattern": "10 gm Gold 999\\.9 Minted Bar Lotus Minted Card \\(923\\)\\s*10\\s*([\\d,]+\\.\\d\\d)", "divide": 10 },
-          "k22": { "pattern": "8 gm Gold 916\\.7 Minted Coin 22 KT Minted Card\\s*8\\s*([\\d,]+\\.\\d\\d)", "divide": 8 }
+          "k24": {
+            "pattern": "10 gm Gold 999\\.9 Minted Bar Lotus Minted Card \\(923\\)\\s*10\\s*([\\d,]+\\.\\d\\d)",
+            "divide": 10
+          },
+          "k22": {
+            "pattern": "8 gm Gold 916\\.7 Minted Coin 22 KT Minted Card\\s*8\\s*([\\d,]+\\.\\d\\d)",
+            "divide": 8
+          }
         }
       }
     },
@@ -124,7 +154,11 @@
         "premiumAction": "GetRatePremiumForFrontNew",
         "deriveK22": true,
         "buy": {
-          "k24": { "symbol": "gold", "premiumName": "FINE GOLD 999", "divide": 10 }
+          "k24": {
+            "symbol": "gold",
+            "premiumName": "FINE GOLD 999",
+            "divide": 10
+          }
         }
       }
     },
@@ -139,11 +173,20 @@
         "fetch": "curl",
         "url": "https://www.bangalorerefinery.com/cdn/shop/files/rates.txt",
         "buy": {
-          "k24": { "pattern": "24K \\(9999\\) 10 g GoldBar", "divide": 10 },
-          "k22": { "pattern": "22K \\(916\\) Gold Coin 8 gm", "divide": 8 }
+          "k24": {
+            "pattern": "24K \\(9999\\) 10 g GoldBar",
+            "divide": 10
+          },
+          "k22": {
+            "pattern": "22K \\(916\\) Gold Coin 8 gm",
+            "divide": 8
+          }
         },
         "sell": {
-          "k22": { "pattern": "BuyBack Gold Rate \\(gm\\)", "divide": 1 }
+          "k22": {
+            "pattern": "BuyBack Gold Rate \\(gm\\)",
+            "divide": 1
+          }
         }
       }
     },
@@ -158,8 +201,14 @@
         "fetch": "curl",
         "url": "https://pngjewellers.com",
         "buy": {
-          "k24": { "pattern": "24K Gold\\s*₹\\s*([\\d,]+)", "divide": 1 },
-          "k22": { "pattern": "22K Gold\\s*₹\\s*([\\d,]+)", "divide": 1 }
+          "k24": {
+            "pattern": "24K Gold\\s*₹\\s*([\\d,]+)",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "22K Gold\\s*₹\\s*([\\d,]+)",
+            "divide": 1
+          }
         }
       }
     },
@@ -176,8 +225,14 @@
         "proxyParams": "proxy_country=IN&browser=false",
         "proxyAfterHours": 4,
         "buy": {
-          "k24": { "pattern": "Online Gold Rate 24 KT \\(999\\)\",\"rate\":\"₹([\\d,\\.]+)/g", "divide": 1 },
-          "k22": { "pattern": "Online Gold Rate 22 KT \\(916\\)\",\"rate\":\"₹([\\d,\\.]+)/g", "divide": 1 }
+          "k24": {
+            "pattern": "Online Gold Rate 24 KT \\(999\\)\",\"rate\":\"₹([\\d,\\.]+)/g",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "Online Gold Rate 22 KT \\(916\\)\",\"rate\":\"₹([\\d,\\.]+)/g",
+            "divide": 1
+          }
         }
       }
     }
