@@ -1,0 +1,32 @@
+# Temporary: can the proxy's browser get through Mia's Cloudflare challenge,
+# where Tanishq's flat block defeats it? Manual only. Costs a few credits.
+name: KB probe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Mia through the proxy
+        env:
+          KEY: ${{ secrets.SCRAPING_KEY }}
+        run: |
+          target='https://www.miabytanishq.com/en_IN/gold-rate-today'
+          enc=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1],safe=''))" "$target")
+
+          probe () {
+            local label="$1"; local extra="$2"
+            url="https://api.scrapingant.com/v2/general?url=${enc}&x-api-key=${KEY}&proxy_country=IN&${extra}"
+            code=$(curl -s -o /tmp/out.html -w '%{http_code}' --max-time 120 "$url")
+            size=$(wc -c < /tmp/out.html)
+            title=$(grep -o -i -m1 '<title>[^<]*' /tmp/out.html | cut -c8-50)
+            rupee=$(grep -o -E '₹ ?[0-9][0-9,]{3,}' /tmp/out.html | head -3 | tr '\n' ' ')
+            k22=$(grep -o -i -E '22\s*k[t]?[^0-9₹]{0,40}[₹]? ?[0-9][0-9,]{3,}' /tmp/out.html | head -2 | tr '\n' ' ')
+            printf '%-34s http=%-4s bytes=%-8s title=%-22s rupees=%s | 22k=%s\n' \
+                   "$label" "$code" "$size" "$title" "${rupee:--}" "${k22:--}"
+          }
+
+          probe "browser=true"                 "browser=true"
+          probe "browser=true + residential"   "browser=true&proxy_type=residential"
