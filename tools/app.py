@@ -168,7 +168,7 @@ def now_iso():
 #  Fetching
 # --------------------------------------------------------------------------- #
 def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params="",
-          proxy_every=0, proxy_max=3):
+          proxy_ok=True, proxy_max=3):
     """Return the raw bytes of a page.
 
     If the site refuses this IP and a proxy is configured, the request is made
@@ -185,13 +185,13 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params="",
         if not (retry and PROXY_URL and PROXY_KEY):
             raise
         # Proxy credits are not all priced alike: an ordinary fetch is about a
-        # credit, a residential one with a browser behind it nearer twenty-five.
-        # A merchant that needs the dear route can be rationed to every Nth hour
-        # so the free allowance covers the month.
-        if proxy_every:
-            hour = datetime.now(timezone.utc).hour
-            if hour % int(proxy_every):
-                raise
+        # credit, a residential one with a browser behind it nearer twenty-five,
+        # so a merchant on the dear route is rationed. The ration is measured in
+        # time SINCE THE LAST ATTEMPT, never against the clock: GitHub's cron
+        # drifts, a job scheduled for 00:00 lands at 01:11, and an hour-modulo
+        # gate then skips the very slot it was meant to allow.
+        if not proxy_ok:
+            raise
 
     # Refused, and a proxy is available. Sites differ in how hard they are:
     # Bhima is happy with the proxy's ordinary pool, Tanishq refuses that too and
@@ -331,7 +331,7 @@ def read_pairs(spec, pairs):
     return None
 
 
-def read_merchant(m):
+def read_merchant(m, proxy_ok=True):
     """Fetch one merchant and return {buy24, buy22, sell24, sell22, derived24}."""
     src = m.get("source") or {}
     adapter = src.get("adapter") or "link_only"
@@ -344,7 +344,7 @@ def read_merchant(m):
 
     raw = fetch(src["url"], src.get("fetch") or "urllib",
                 proxy_params=src.get("proxyParams") or "",
-                proxy_every=src.get("proxyEvery") or 0,
+                proxy_ok=proxy_ok,
                 proxy_max=int(src.get("proxyMaxAttempts") or 3))
 
     if adapter == "text_regex":
@@ -512,6 +512,25 @@ def pdf_text(raw):
 # --------------------------------------------------------------------------- #
 #  The refresh pass
 # --------------------------------------------------------------------------- #
+def may_use_proxy(prev_rate, after_hours):
+    """Has enough time passed since we last spent a credit on this merchant?
+
+    Gating on elapsed time rather than the hour of the day means a late build
+    still gets its turn - and a merchant that keeps failing cannot burn the
+    month's allowance retrying on every single run.
+    """
+    if not after_hours:
+        return True
+    last = prev_rate.get("proxyTriedAt")
+    if not last:
+        return True
+    try:
+        gap = datetime.now(IST) - datetime.fromisoformat(last)
+    except Exception:
+        return True
+    return gap.total_seconds() >= after_hours * 3600
+
+
 def refresh_all(only=None):
     """Walk the merchant list, update the board, keep a little history."""
     if _refreshing.is_set():
@@ -523,8 +542,11 @@ def refresh_all(only=None):
             if only and m["id"] != only:
                 continue
             entry = {"fetched": now_iso()}
+            after = float((m.get("source") or {}).get("proxyAfterHours") or 0)
+            prev_rate = load_board()["rates"].get(m["id"]) or {}
+            proxy_ok = may_use_proxy(prev_rate, after)
             try:
-                got = read_merchant(m)
+                got = read_merchant(m, proxy_ok=proxy_ok)
                 if got is None:
                     entry["ok"] = False
                     entry["error"] = "no automatic source"
@@ -548,6 +570,10 @@ def refresh_all(only=None):
                             entry[k] = prev[k]
                     entry["fetched"] = prev.get("fetched")
                     entry["stale"] = True
+                if proxy_ok and after:
+                    entry["proxyTriedAt"] = now_iso()
+                elif prev_rate.get("proxyTriedAt"):
+                    entry["proxyTriedAt"] = prev_rate["proxyTriedAt"]
                 board["rates"][m["id"]] = entry
                 if entry.get("ok") and entry.get("buy24"):
                     hist = board["history"].setdefault(m["id"], [])

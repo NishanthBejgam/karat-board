@@ -5,8 +5,8 @@
     "",
     "  site      the page a human opens (the tile links here)",
     "  hideLink  true = no open-the-site button on this tile",
-    "  source.proxyEvery  only try the proxy on hours divisible by this (UTC),",
-    "                     for a merchant whose proxy route is expensive",
+    "  source.proxyAfterHours  do not spend another proxy credit on this",
+    "                          merchant until this many hours have passed",
     "  source.proxyMaxAttempts  how many proxy calls that merchant may spend",
     "  source.proxyParams  extra query for the fallback proxy, for a merchant",
     "                      that refuses even its datacenter pool",
@@ -52,8 +52,8 @@
         "adapter": "text_regex",
         "fetch": "curl",
         "url": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
-        "proxyParams": "proxy_type=residential",
-        "proxyEvery": 6,
+        "proxyParams": "proxy_type=residential&browser=true",
+        "proxyAfterHours": 8,
         "proxyMaxAttempts": 2,
         "deriveK24": true,
         "buy": {
@@ -174,7 +174,7 @@
         "fetch": "curl",
         "url": "https://www.bhimagold.com/",
         "proxyParams": "browser=false",
-        "proxyEvery": 4,
+        "proxyAfterHours": 4,
         "buy": {
           "k24": { "pattern": "Online Gold Rate 24 KT \\(999\\)\",\"rate\":\"₹([\\d,\\.]+)/g", "divide": 1 },
           "k22": { "pattern": "Online Gold Rate 22 KT \\(916\\)\",\"rate\":\"₹([\\d,\\.]+)/g", "divide": 1 }
