@@ -1,6 +1,5 @@
-# Temporary: Tanishq refuses the proxy's Indian residential browser. Does it
-# refuse every country, and does the extended endpoint behave differently?
-# Manual only. Costs credits - delete once answered.
+# Temporary: a GB residential browser gets through Tanishq where IN, US and SG
+# are refused. Confirm the response really carries the rate. Manual only.
 name: KB probe
 
 on:
@@ -10,44 +9,16 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe Tanishq through the proxy
+      - name: Fetch Tanishq via a GB residential browser
         env:
           KEY: ${{ secrets.SCRAPING_KEY }}
         run: |
           target='https://www.tanishq.co.in/gold-rate.html?lang=en_IN'
           enc=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1],safe=''))" "$target")
+          url="https://api.scrapingant.com/v2/general?url=${enc}&x-api-key=${KEY}&proxy_country=GB&proxy_type=residential&browser=true"
 
-          probe () {
-            local label="$1"; local endpoint="$2"; local extra="$3"
-            url="https://api.scrapingant.com/v2/${endpoint}?url=${enc}&x-api-key=${KEY}&${extra}"
-            code=$(curl -s -o /tmp/o -w '%{http_code}' --max-time 150 "$url")
-            size=$(wc -c < /tmp/o)
-            # the rate the board actually wants: 22 Kt ... 1 G ... a number
-            rate=$( { grep -o -E '22[^0-9]{0,12}Kt.{0,400}?1 G[^0-9]{0,12}[0-9][0-9,]{3,}' /tmp/o || true; } | head -1 | { grep -o -E '[0-9][0-9,]{3,}$' || true; } )
-            rupees=$( { grep -c '₹' /tmp/o || true; } )
-            dollars=$( { grep -c 'USD' /tmp/o || true; } )
-            title=$( { grep -o -i -m1 '<title>[^<]*' /tmp/o || true; } | cut -c8-40 )
-            printf '%-38s http=%-5s bytes=%-9s rate=%-10s ₹hits=%-6s $hits=%s\n' \
-                   "$label" "$code" "$size" "${rate:--}" "$rupees" "$dollars"
-          }
-
-          probe "GB residential+browser" general "proxy_country=GB&proxy_type=residential&browser=true"
-
-          echo "=== what the GB fetch actually contains ==="
-          python3 - <<'PY'
-import re, html
-raw = open("/tmp/o", encoding="utf-8", errors="replace").read()
-t = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</>", " ", raw)
-t = re.sub(r"\s+", " ", html.unescape(re.sub(r"(?s)<[^>]+>", " ", t)))
-print("title:", (re.search(r"(?is)<title>([^<]*)", raw) or ["","-"])[1][:70])
-print("chars of text:", len(t))
-hits = 0
-for m in re.finditer(r"(?i)(22\s*Kt|24\s*Kt|Gold Rate)", t):
-    seg = t[max(0, m.start()-80):m.start()+220].strip()
-    if re.search(r"\d{4,}", seg):
-        print("  ::", seg[:230]); hits += 1
-    if hits >= 4:
-        break
-if not hits:
-    print("  no rate-looking text found")
-PY
+          code=$(curl -s -o /tmp/o -w '%{http_code}' --max-time 150 "$url")
+          echo "http=$code  bytes=$(wc -c < /tmp/o)"
+          echo "title: $( { grep -o -i -m1 '<title>[^<]*' /tmp/o || true; } )"
+          echo "--- does the board's own pattern match? ---"
+          python3 tools/probe_rate.py /tmp/o
