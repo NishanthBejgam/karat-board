@@ -59,7 +59,7 @@
         "fetch": "curl",
         "url": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
         "proxyParams": "proxy_country=GB&proxy_type=residential&browser=true",
-        "proxyAfterHours": 0,
+        "proxyAfterHours": 4,
         "proxyMaxAttempts": 2,
         "buy": {
           "k24": {
