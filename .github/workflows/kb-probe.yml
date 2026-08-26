@@ -1,0 +1,37 @@
+# Temporary: Tanishq refuses the proxy's Indian residential browser. Does it
+# refuse every country, and does the extended endpoint behave differently?
+# Manual only. Costs credits - delete once answered.
+name: KB probe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Tanishq through the proxy
+        env:
+          KEY: ${{ secrets.SCRAPING_KEY }}
+        run: |
+          target='https://www.tanishq.co.in/gold-rate.html?lang=en_IN'
+          enc=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1],safe=''))" "$target")
+
+          probe () {
+            local label="$1"; local endpoint="$2"; local extra="$3"
+            url="https://api.scrapingant.com/v2/${endpoint}?url=${enc}&x-api-key=${KEY}&${extra}"
+            code=$(curl -s -o /tmp/o -w '%{http_code}' --max-time 150 "$url")
+            size=$(wc -c < /tmp/o)
+            # the rate the board actually wants: 22 Kt ... 1 G ... a number
+            rate=$(grep -o -E '22[^0-9]{0,12}Kt.{0,400}?1 G[^0-9]{0,12}[0-9][0-9,]{3,}' /tmp/o | head -1 | grep -o -E '[0-9][0-9,]{3,}$')
+            rupees=$(grep -c '₹' /tmp/o || true)
+            dollars=$(grep -c 'USD\|\$' /tmp/o || true)
+            printf '%-38s http=%-5s bytes=%-9s rate=%-10s ₹hits=%-6s $hits=%s\n' \
+                   "$label" "$code" "$size" "${rate:--}" "$rupees" "$dollars"
+          }
+
+          probe "IN  residential+browser (control)" general "proxy_country=IN&proxy_type=residential&browser=true"
+          probe "US  residential+browser"           general "proxy_country=US&proxy_type=residential&browser=true"
+          probe "SG  residential+browser"           general "proxy_country=SG&proxy_type=residential&browser=true"
+          probe "GB  residential+browser"           general "proxy_country=GB&proxy_type=residential&browser=true"
+          probe "IN  extended endpoint"            extended "proxy_country=IN&proxy_type=residential&browser=true"
