@@ -52,7 +52,7 @@
         "adapter": "text_regex",
         "fetch": "curl",
         "url": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
-        "proxyParams": "proxy_type=residential&browser=true",
+        "proxyParams": "proxy_country=GB&proxy_type=residential&browser=true",
         "proxyAfterHours": 8,
         "proxyMaxAttempts": 2,
         "deriveK24": true,
@@ -173,7 +173,7 @@
         "adapter": "raw_regex",
         "fetch": "curl",
         "url": "https://www.bhimagold.com/",
-        "proxyParams": "browser=false",
+        "proxyParams": "proxy_country=IN&browser=false",
         "proxyAfterHours": 4,
         "buy": {
           "k24": { "pattern": "Online Gold Rate 24 KT \\(999\\)\",\"rate\":\"₹([\\d,\\.]+)/g", "divide": 1 },
