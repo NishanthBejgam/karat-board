@@ -23,9 +23,10 @@ jobs:
             code=$(curl -s -o /tmp/o -w '%{http_code}' --max-time 150 "$url")
             size=$(wc -c < /tmp/o)
             # the rate the board actually wants: 22 Kt ... 1 G ... a number
-            rate=$(grep -o -E '22[^0-9]{0,12}Kt.{0,400}?1 G[^0-9]{0,12}[0-9][0-9,]{3,}' /tmp/o | head -1 | grep -o -E '[0-9][0-9,]{3,}$')
-            rupees=$(grep -c '₹' /tmp/o || true)
-            dollars=$(grep -c 'USD\|\$' /tmp/o || true)
+            rate=$( { grep -o -E '22[^0-9]{0,12}Kt.{0,400}?1 G[^0-9]{0,12}[0-9][0-9,]{3,}' /tmp/o || true; } | head -1 | { grep -o -E '[0-9][0-9,]{3,}$' || true; } )
+            rupees=$( { grep -c '₹' /tmp/o || true; } )
+            dollars=$( { grep -c 'USD' /tmp/o || true; } )
+            title=$( { grep -o -i -m1 '<title>[^<]*' /tmp/o || true; } | cut -c8-40 )
             printf '%-38s http=%-5s bytes=%-9s rate=%-10s ₹hits=%-6s $hits=%s\n' \
                    "$label" "$code" "$size" "${rate:--}" "$rupees" "$dollars"
           }
