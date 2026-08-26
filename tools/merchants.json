@@ -119,6 +119,30 @@
       }
     },
     {
+      "id": "indriya",
+      "name": "Indriya",
+      "short": "Indriya",
+      "site": "https://www.indriya.com/gold-rate-today",
+      "note": "Aditya Birla's jeweller. Their 24K is 995 fine, not 999, so it reads a little under the others.",
+      "source": {
+        "adapter": "raw_regex",
+        "fetch": "curl",
+        "url": "https://www.indriya.com/content/noveljewels/in/en/gold-rate-today/jcr:content/root/container/container/container_copy_copy__1497933197/chartcomponent.goldChart.json?storeId=NS0001",
+        "buy": {
+          "k24": {
+            "pattern": "metal_purity\\\\\":\\\\\"24KT 995\\\\\",\\\\\"metal_rate\\\\\":\\\\\"([\\d.]+)",
+            "divide": 1,
+            "last": true
+          },
+          "k22": {
+            "pattern": "metal_purity\\\\\":\\\\\"22KT\\\\\",\\\\\"metal_rate\\\\\":\\\\\"([\\d.]+)",
+            "divide": 1,
+            "last": true
+          }
+        }
+      }
+    },
+    {
       "id": "mmtc",
       "name": "MMTC-PAMP",
       "short": "MMTC-PAMP",

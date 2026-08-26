@@ -311,13 +311,20 @@ def to_number(s):
 #  Adapters - one per way a merchant publishes its rate
 # --------------------------------------------------------------------------- #
 def _pick(spec, haystack):
-    """Run one { pattern, divide } recipe against a body of text."""
+    """Run one { pattern, divide } recipe against a body of text.
+
+    `last: true` takes the final match rather than the first - some feeds hand
+    back a month of history in date order, where today's number is at the end.
+    """
     if not spec:
         return None
-    m = re.search(spec["pattern"], haystack, re.S | re.I)
-    if not m:
+    found = re.findall(spec["pattern"], haystack, re.S | re.I)
+    if not found:
         return None
-    return to_number(m.group(1)) / float(spec.get("divide") or 1)
+    value = found[-1] if spec.get("last") else found[0]
+    if isinstance(value, tuple):
+        value = value[0]
+    return to_number(value) / float(spec.get("divide") or 1)
 
 
 def read_pairs(spec, pairs):

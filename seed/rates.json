@@ -9,7 +9,7 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-25T20:48:01+05:30",
+    "fetched": "2026-08-27T00:39:19+05:30",
     "buy24": 16375.0,
     "buy22": 15010.0,
     "ok": true
@@ -23,18 +23,19 @@
    "name": "Tanishq",
    "short": "Tanishq",
    "site": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
-   "note": "Tanishq publishes 22K only; 24K is derived.",
+   "note": "Both purities come straight off the rate page's data attributes.",
    "hideLink": false,
-   "adapter": "text_regex",
+   "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-25T20:48:02+05:30",
+    "fetched": "2026-08-27T00:39:20+05:30",
+    "buy24": 16424.0,
     "buy22": 15055.0,
-    "buy24": 16423.64,
-    "derived24": true,
-    "ok": true
+    "ok": true,
+    "proxyTriedAt": "2026-08-27T00:39:21+05:30"
    },
    "spark": [
-    16423.64
+    16423.64,
+    16424.0
    ]
   },
   {
@@ -46,7 +47,7 @@
    "hideLink": true,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-25T20:48:03+05:30",
+    "fetched": "2026-08-27T00:39:22+05:30",
     "buy24": 16386.0,
     "buy22": 15010.0,
     "ok": true
@@ -64,13 +65,31 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-25T20:48:04+05:30",
+    "fetched": "2026-08-27T00:39:23+05:30",
     "buy24": 16386.0,
     "buy22": 15010.0,
     "ok": true
    },
    "spark": [
     16386.0
+   ]
+  },
+  {
+   "id": "indriya",
+   "name": "Indriya",
+   "short": "Indriya",
+   "site": "https://www.indriya.com/gold-rate-today",
+   "note": "Aditya Birla's jeweller. Their 24K is 995 fine, not 999, so it reads a little under the others.",
+   "hideLink": false,
+   "adapter": "raw_regex",
+   "rate": {
+    "fetched": "2026-08-27T00:39:25+05:30",
+    "buy24": 16299.53,
+    "buy22": 15005.4,
+    "ok": true
+   },
+   "spark": [
+    16299.53
    ]
   },
   {
@@ -82,13 +101,14 @@
    "hideLink": false,
    "adapter": "pdf_regex",
    "rate": {
-    "fetched": "2026-08-25T20:48:05+05:30",
-    "buy24": 17641.75,
-    "buy22": 16288.83,
+    "fetched": "2026-08-27T00:39:29+05:30",
+    "buy24": 17701.94,
+    "buy22": 16355.58,
     "ok": true
    },
    "spark": [
-    17641.75
+    17641.75,
+    17701.94
    ]
   },
   {
@@ -100,14 +120,16 @@
    "hideLink": false,
    "adapter": "socketio_livedata",
    "rate": {
-    "fetched": "2026-08-25T20:48:08+05:30",
-    "buy24": 16394.9,
-    "buy22": 15028.66,
+    "fetched": "2026-08-27T00:39:32+05:30",
+    "buy24": 16099.0,
+    "buy22": 14757.42,
     "derived22": true,
     "ok": true
    },
    "spark": [
-    16394.9
+    16394.9,
+    16410.0,
+    16099.0
    ]
   },
   {
@@ -119,7 +141,7 @@
    "hideLink": false,
    "adapter": "pairs_json",
    "rate": {
-    "fetched": "2026-08-25T20:48:11+05:30",
+    "fetched": "2026-08-27T00:39:35+05:30",
     "buy24": 16422.0,
     "buy22": 15215.0,
     "sell22": 15020.0,
@@ -138,13 +160,14 @@
    "hideLink": false,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-25T20:48:12+05:30",
-    "buy24": 16189.0,
-    "buy22": 14984.0,
+    "fetched": "2026-08-27T00:39:36+05:30",
+    "buy24": 16204.0,
+    "buy22": 14998.0,
     "ok": true
    },
    "spark": [
-    16189.0
+    16189.0,
+    16204.0
    ]
   },
   {
@@ -156,20 +179,21 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-25T20:48:13+05:30",
+    "fetched": "2026-08-27T00:39:38+05:30",
     "buy24": 16379.0,
-    "buy22": 13999.0,
-    "ok": true
+    "buy22": 14899.0,
+    "ok": true,
+    "proxyTriedAt": "2026-08-27T00:39:39+05:30"
    },
    "spark": [
     16379.0
    ]
   }
  ],
- "lastRefresh": "2026-08-25T20:48:14+05:30",
+ "lastRefresh": "2026-08-27T00:39:39+05:30",
  "refreshMinutes": 15,
  "refreshing": false,
- "now": "2026-08-25T20:48:14+05:30",
+ "now": "2026-08-27T00:39:39+05:30",
  "static": true,
- "builtAt": "2026-08-25T20:48:14+05:30"
+ "builtAt": "2026-08-27T00:39:39+05:30"
 }
