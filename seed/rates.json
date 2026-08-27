@@ -9,7 +9,7 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-27T12:36:29+05:30",
+    "fetched": "2026-08-27T12:44:50+05:30",
     "buy24": 16298.0,
     "buy22": 14940.0,
     "ok": true
@@ -27,11 +27,11 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-27T12:36:30+05:30",
+    "fetched": "2026-08-27T12:44:51+05:30",
     "buy24": 16347.0,
     "buy22": 14985.0,
     "ok": true,
-    "proxyTriedAt": "2026-08-27T12:36:30+05:30"
+    "proxyTriedAt": "2026-08-27T12:44:51+05:30"
    },
    "spark": [
     16347.0
@@ -46,7 +46,7 @@
    "hideLink": true,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-27T12:36:31+05:30",
+    "fetched": "2026-08-27T12:44:52+05:30",
     "buy24": 16386.0,
     "buy22": 15010.0,
     "ok": true
@@ -64,7 +64,7 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-27T12:36:32+05:30",
+    "fetched": "2026-08-27T12:44:53+05:30",
     "buy24": 16310.0,
     "buy22": 14940.0,
     "ok": true
@@ -82,7 +82,7 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-27T12:36:33+05:30",
+    "fetched": "2026-08-27T12:44:54+05:30",
     "buy24": 16223.49,
     "buy22": 14935.39,
     "ok": true
@@ -100,13 +100,31 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-27T12:36:38+05:30",
+    "fetched": "2026-08-27T12:44:58+05:30",
     "buy24": 16310.0,
     "buy22": 14940.0,
     "ok": true
    },
    "spark": [
     16310.0
+   ]
+  },
+  {
+   "id": "dp",
+   "name": "D.P. Jewellers",
+   "short": "D.P.",
+   "site": "https://www.dpjewellers.com/",
+   "note": "D.P. Abhushan. Straight off their Magento getMetalPrices call.",
+   "hideLink": false,
+   "adapter": "raw_regex",
+   "rate": {
+    "fetched": "2026-08-27T12:44:59+05:30",
+    "buy24": 15880.0,
+    "buy22": 14546.0,
+    "ok": true
+   },
+   "spark": [
+    15880.0
    ]
   },
   {
@@ -118,7 +136,7 @@
    "hideLink": false,
    "adapter": "pdf_regex",
    "rate": {
-    "fetched": "2026-08-27T12:36:39+05:30",
+    "fetched": "2026-08-27T12:45:00+05:30",
     "buy24": 17410.68,
     "buy22": 16089.81,
     "ok": true
@@ -136,14 +154,14 @@
    "hideLink": false,
    "adapter": "socketio_livedata",
    "rate": {
-    "fetched": "2026-08-27T12:36:42+05:30",
-    "buy24": 16101.5,
-    "buy22": 14759.71,
+    "fetched": "2026-08-27T12:45:02+05:30",
+    "buy24": 16102.5,
+    "buy22": 14760.62,
     "derived22": true,
     "ok": true
    },
    "spark": [
-    16101.5
+    16102.5
    ]
   },
   {
@@ -155,7 +173,7 @@
    "hideLink": false,
    "adapter": "pairs_json",
    "rate": {
-    "fetched": "2026-08-27T12:36:45+05:30",
+    "fetched": "2026-08-27T12:45:04+05:30",
     "buy24": 16422.0,
     "buy22": 15215.0,
     "sell22": 15020.0,
@@ -174,7 +192,7 @@
    "hideLink": false,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-27T12:36:46+05:30",
+    "fetched": "2026-08-27T12:45:05+05:30",
     "buy24": 15874.0,
     "buy22": 14692.0,
     "ok": true
@@ -192,21 +210,21 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-27T12:36:48+05:30",
+    "fetched": "2026-08-27T12:45:06+05:30",
     "buy24": 16379.0,
     "buy22": 14899.0,
     "ok": true,
-    "proxyTriedAt": "2026-08-27T12:36:49+05:30"
+    "proxyTriedAt": "2026-08-27T12:45:07+05:30"
    },
    "spark": [
     16379.0
    ]
   }
  ],
- "lastRefresh": "2026-08-27T12:36:49+05:30",
+ "lastRefresh": "2026-08-27T12:45:07+05:30",
  "refreshMinutes": 15,
  "refreshing": false,
- "now": "2026-08-27T12:36:49+05:30",
+ "now": "2026-08-27T12:45:07+05:30",
  "static": true,
- "builtAt": "2026-08-27T12:36:49+05:30"
+ "builtAt": "2026-08-27T12:45:07+05:30"
 }

@@ -165,6 +165,28 @@
       }
     },
     {
+      "id": "dp",
+      "name": "D.P. Jewellers",
+      "short": "D.P.",
+      "site": "https://www.dpjewellers.com/",
+      "note": "D.P. Abhushan. Straight off their Magento getMetalPrices call.",
+      "source": {
+        "adapter": "raw_regex",
+        "fetch": "curl",
+        "url": "https://www.dpjewellers.com/graphql?query=query+getMetalPrices%7BmetalPrices%7Brate_id+purity+sale_rate+metal+__typename%7D%7D&operationName=getMetalPrices&variables=%7B%7D",
+        "buy": {
+          "k24": {
+            "pattern": "\"purity\":\"24KT\",\"sale_rate\":([\\d.]+)",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "\"purity\":\"22KT\",\"sale_rate\":([\\d.]+)",
+            "divide": 1
+          }
+        }
+      }
+    },
+    {
       "id": "mmtc",
       "name": "MMTC-PAMP",
       "short": "MMTC-PAMP",
