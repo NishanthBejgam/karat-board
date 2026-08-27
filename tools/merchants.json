@@ -143,6 +143,28 @@
       }
     },
     {
+      "id": "grt",
+      "name": "GRT Jewellers",
+      "short": "GRT",
+      "site": "https://www.grtjewels.com/",
+      "note": "Rate table embedded in their homepage, per gram.",
+      "source": {
+        "adapter": "raw_regex",
+        "fetch": "curl",
+        "url": "https://www.grtjewels.com/",
+        "buy": {
+          "k24": {
+            "pattern": "purity\\\\\":\\\\\"24 KT\\\\\",\\\\\"amount\\\\\":([\\d.]+)",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "purity\\\\\":\\\\\"22 KT\\\\\",\\\\\"amount\\\\\":([\\d.]+)",
+            "divide": 1
+          }
+        }
+      }
+    },
+    {
       "id": "mmtc",
       "name": "MMTC-PAMP",
       "short": "MMTC-PAMP",

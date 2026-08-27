@@ -9,13 +9,13 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-27T00:39:19+05:30",
-    "buy24": 16375.0,
-    "buy22": 15010.0,
+    "fetched": "2026-08-27T12:36:29+05:30",
+    "buy24": 16298.0,
+    "buy22": 14940.0,
     "ok": true
    },
    "spark": [
-    16375.0
+    16298.0
    ]
   },
   {
@@ -27,15 +27,14 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-27T00:39:20+05:30",
-    "buy24": 16424.0,
-    "buy22": 15055.0,
+    "fetched": "2026-08-27T12:36:30+05:30",
+    "buy24": 16347.0,
+    "buy22": 14985.0,
     "ok": true,
-    "proxyTriedAt": "2026-08-27T00:39:21+05:30"
+    "proxyTriedAt": "2026-08-27T12:36:30+05:30"
    },
    "spark": [
-    16423.64,
-    16424.0
+    16347.0
    ]
   },
   {
@@ -47,7 +46,7 @@
    "hideLink": true,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-27T00:39:22+05:30",
+    "fetched": "2026-08-27T12:36:31+05:30",
     "buy24": 16386.0,
     "buy22": 15010.0,
     "ok": true
@@ -65,13 +64,13 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-27T00:39:23+05:30",
-    "buy24": 16386.0,
-    "buy22": 15010.0,
+    "fetched": "2026-08-27T12:36:32+05:30",
+    "buy24": 16310.0,
+    "buy22": 14940.0,
     "ok": true
    },
    "spark": [
-    16386.0
+    16310.0
    ]
   },
   {
@@ -83,13 +82,31 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-27T00:39:25+05:30",
-    "buy24": 16299.53,
-    "buy22": 15005.4,
+    "fetched": "2026-08-27T12:36:33+05:30",
+    "buy24": 16223.49,
+    "buy22": 14935.39,
     "ok": true
    },
    "spark": [
-    16299.53
+    16223.49
+   ]
+  },
+  {
+   "id": "grt",
+   "name": "GRT Jewellers",
+   "short": "GRT",
+   "site": "https://www.grtjewels.com/",
+   "note": "Rate table embedded in their homepage, per gram.",
+   "hideLink": false,
+   "adapter": "raw_regex",
+   "rate": {
+    "fetched": "2026-08-27T12:36:38+05:30",
+    "buy24": 16310.0,
+    "buy22": 14940.0,
+    "ok": true
+   },
+   "spark": [
+    16310.0
    ]
   },
   {
@@ -101,14 +118,13 @@
    "hideLink": false,
    "adapter": "pdf_regex",
    "rate": {
-    "fetched": "2026-08-27T00:39:29+05:30",
-    "buy24": 17701.94,
-    "buy22": 16355.58,
+    "fetched": "2026-08-27T12:36:39+05:30",
+    "buy24": 17410.68,
+    "buy22": 16089.81,
     "ok": true
    },
    "spark": [
-    17641.75,
-    17701.94
+    17410.68
    ]
   },
   {
@@ -120,16 +136,14 @@
    "hideLink": false,
    "adapter": "socketio_livedata",
    "rate": {
-    "fetched": "2026-08-27T00:39:32+05:30",
-    "buy24": 16099.0,
-    "buy22": 14757.42,
+    "fetched": "2026-08-27T12:36:42+05:30",
+    "buy24": 16101.5,
+    "buy22": 14759.71,
     "derived22": true,
     "ok": true
    },
    "spark": [
-    16394.9,
-    16410.0,
-    16099.0
+    16101.5
    ]
   },
   {
@@ -141,7 +155,7 @@
    "hideLink": false,
    "adapter": "pairs_json",
    "rate": {
-    "fetched": "2026-08-27T00:39:35+05:30",
+    "fetched": "2026-08-27T12:36:45+05:30",
     "buy24": 16422.0,
     "buy22": 15215.0,
     "sell22": 15020.0,
@@ -160,14 +174,13 @@
    "hideLink": false,
    "adapter": "text_regex",
    "rate": {
-    "fetched": "2026-08-27T00:39:36+05:30",
-    "buy24": 16204.0,
-    "buy22": 14998.0,
+    "fetched": "2026-08-27T12:36:46+05:30",
+    "buy24": 15874.0,
+    "buy22": 14692.0,
     "ok": true
    },
    "spark": [
-    16189.0,
-    16204.0
+    15874.0
    ]
   },
   {
@@ -179,21 +192,21 @@
    "hideLink": false,
    "adapter": "raw_regex",
    "rate": {
-    "fetched": "2026-08-27T00:39:38+05:30",
+    "fetched": "2026-08-27T12:36:48+05:30",
     "buy24": 16379.0,
     "buy22": 14899.0,
     "ok": true,
-    "proxyTriedAt": "2026-08-27T00:39:39+05:30"
+    "proxyTriedAt": "2026-08-27T12:36:49+05:30"
    },
    "spark": [
     16379.0
    ]
   }
  ],
- "lastRefresh": "2026-08-27T00:39:39+05:30",
+ "lastRefresh": "2026-08-27T12:36:49+05:30",
  "refreshMinutes": 15,
  "refreshing": false,
- "now": "2026-08-27T00:39:39+05:30",
+ "now": "2026-08-27T12:36:49+05:30",
  "static": true,
- "builtAt": "2026-08-27T00:39:39+05:30"
+ "builtAt": "2026-08-27T12:36:49+05:30"
 }

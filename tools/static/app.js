@@ -204,6 +204,8 @@ const MARKS = {
             <path d="M13.3 16.2 12.6 21"/><path d="M18.4 16.6l.4 4.4"/>
             <path d="M15.6 16.6 15.2 21" opacity=".5"/>
             <path d="M19.9 13.4c.9-.5 1.5-1.3 1.7-2.3" opacity=".5"/>`,
+  // the lotus that sits beside their letters
+  grt: `<g><path d="M12 18C10.9 14.9 11 11.7 12 8.6 13 11.7 13.1 14.9 12 18Z" transform="rotate(-54 12 18)" opacity=".55"/><path d="M12 18C10.9 14.9 11 11.7 12 8.6 13 11.7 13.1 14.9 12 18Z" transform="rotate(-27 12 18)"/><path d="M12 18C10.9 14.9 11 11.7 12 8.6 13 11.7 13.1 14.9 12 18Z" transform="rotate(0 12 18)"/><path d="M12 18C10.9 14.9 11 11.7 12 8.6 13 11.7 13.1 14.9 12 18Z" transform="rotate(27 12 18)"/><path d="M12 18C10.9 14.9 11 11.7 12 8.6 13 11.7 13.1 14.9 12 18Z" transform="rotate(54 12 18)" opacity=".55"/><circle cx="12" cy="19.2" r="1.1" fill="currentColor" stroke="none"/></g>`,
   // the lettered coin rim
   mmtc: `<circle cx="12" cy="12" r="9.3"/><circle cx="12" cy="12" r="4.5" opacity=".9"/>
          <g opacity=".5" stroke-width="1.5">
