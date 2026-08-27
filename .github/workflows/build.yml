@@ -1,18 +1,27 @@
 # Karat Board - the scheduled build that makes this app a website.
 #
-# Every 15 minutes GitHub sweeps eight merchants, writes rates.json beside the
-# page and publishes the pair to Pages. Visitors get static files off a CDN; the
-# Python never runs on anyone's request, so there is no server and no bill.
+# GitHub sweeps the merchants, writes rates.json beside the page and publishes
+# the pair to Pages. Visitors get static files off a CDN; the Python never runs
+# on anyone's request, so there is no server and no bill.
 
 name: Build and publish
 
 on:
   schedule:
-    # Every two hours. Most of these merchants set one rate each morning and
-    # leave it, and the two that need the proxy spend credits each time - at
-    # this cadence that is ~720 fetches a month against a 10,000 allowance.
-    # Best-effort anyway; GitHub queues cron behind paid work.
-    - cron: "0 */2 * * *"
+    # Asked hourly, on odd minutes, in two independent entries.
+    #
+    # A single "0 */2 * * *" looked sensible and behaved badly: GitHub queues
+    # free cron behind paid work and simply drops slots it cannot serve. Over
+    # one day it delivered four runs instead of twelve, twice leaving the board
+    # ~10 hours stale. Two lessons are baked in here - :00 is the most contended
+    # minute on the whole platform, so ask at :17 and :47 instead; and a second
+    # entry means a dropped slot is covered within the hour rather than the day.
+    #
+    # This does not cost more: proxy credits are rationed per merchant by
+    # proxyAfterHours, not per build, and Actions minutes are free on a public
+    # repo. Extra runs only re-read the merchants that cost nothing.
+    - cron: "17 * * * *"
+    - cron: "47 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
