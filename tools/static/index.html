@@ -53,6 +53,84 @@
     .seg button { border: none; background: transparent; color: var(--m3-on-surface-var);
       padding: 7px 15px; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 700; }
     .seg button.on { background: var(--m3-primary); color: var(--m3-on-primary); box-shadow: var(--shadow-1); }
+    .bar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    /* ---- Which jewellers ----
+       Fourteen chips across the top would outweigh the board they filter, so
+       the whole thing folds into one button that says what it is doing. Search,
+       tick, or narrow to one - and the headline strip recomputes over whatever
+       is left, because "cheapest" should mean cheapest of the ones you asked
+       for. Unlike the cut chips this IS remembered: it is about whose rates you
+       care about, not about a different number. */
+    .picker { position: relative; }
+    .pick-btn {
+      display: inline-flex; align-items: center; gap: 7px; font: inherit; font-size: 13px;
+      font-weight: 700; padding: 7px 11px 7px 12px; border-radius: 10px;
+      background: var(--m3-surface-2); border: 1px solid var(--m3-outline-var);
+      color: var(--m3-on-surface); transition: background .14s, border-color .14s;
+    }
+    .pick-btn:hover { background: var(--m3-surface-3); border-color: var(--m3-outline); }
+    .pick-btn .chev { transition: transform .18s; opacity: .7; }
+    .picker.open .pick-btn { border-color: var(--m3-primary); background: var(--m3-surface-3); }
+    .picker.open .pick-btn .chev { transform: rotate(180deg); }
+    .pick-btn.some { border-color: color-mix(in srgb, var(--gold) 55%, transparent);
+                     background: color-mix(in srgb, var(--gold) 14%, var(--m3-surface-2)); }
+
+    .pop {
+      position: absolute; z-index: 40; top: calc(100% + 7px); left: 0; width: 302px; max-width: 88vw;
+      background: var(--m3-surface-1); border: 1px solid var(--m3-outline-var);
+      border-radius: var(--r-md); box-shadow: var(--shadow-2); overflow: hidden;
+      display: flex; flex-direction: column;
+      animation: pop-in .16s cubic-bezier(.2,.8,.2,1) both;
+    }
+    @keyframes pop-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { .pop { animation: none; } }
+    .pop-search { display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+                  border-bottom: 1px solid var(--m3-outline-var); color: var(--m3-on-surface-var); }
+    .pop-search input { flex: 1; min-width: 0; font: inherit; font-size: 13.5px; border: none;
+                        background: transparent; color: var(--m3-on-surface); outline: none; }
+    .pop-list { max-height: 296px; overflow-y: auto; padding: 6px; }
+    .pop-row {
+      display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 7px;
+      border: none; background: transparent; border-radius: 9px; font: inherit; text-align: left;
+      color: var(--m3-on-surface);
+    }
+    .pop-row:hover { background: var(--m3-surface-2); }
+    .pop-row .mark { width: 27px; height: 27px; border-radius: 8px; }
+    .pop-row .mark svg { width: 17px; height: 17px; }
+    .pop-row .rn { flex: 1; min-width: 0; font-size: 13px; font-weight: 600;
+                   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pop-row .only { font-size: 10.5px; font-weight: 800; letter-spacing: .4px; padding: 2px 7px;
+      border-radius: 6px; border: 1px solid var(--m3-outline-var); background: var(--m3-surface-1);
+      color: var(--m3-on-surface-var); opacity: 0; transition: opacity .12s; }
+    .pop-row:hover .only, .pop-row .only:focus-visible { opacity: 1; }
+    .pop-row .only:hover { color: var(--m3-primary); border-color: var(--m3-primary); }
+    .tick {
+      width: 17px; height: 17px; border-radius: 5px; flex: 0 0 auto; display: grid; place-items: center;
+      border: 1.5px solid var(--m3-outline); color: transparent; transition: background .12s, border-color .12s;
+    }
+    .pop-row.on .tick { background: var(--m3-primary); border-color: var(--m3-primary);
+                        color: var(--m3-on-primary); }
+    .pop-empty { padding: 16px 12px; text-align: center; font-size: 12.5px;
+                 color: var(--m3-on-surface-var); }
+    .pop-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 8px 10px 8px 14px; border-top: 1px solid var(--m3-outline-var);
+      background: var(--m3-surface-2); font-size: 11.5px; color: var(--m3-on-surface-var); }
+    .pop-acts { display: flex; align-items: center; gap: 4px; }
+    /* Ticking is a draft until Apply commits it, so the board does not lurch
+       under you five times while you pick five jewellers. Nothing to commit,
+       nothing to press. */
+    .pop-foot .btn-sm { padding: 5px 10px; font-size: 12px; }
+    #pickApply:disabled { opacity: .4; pointer-events: none; }
+    .pop-row.draft-off .mark { opacity: .45; }
+    .pop-row.draft-off .rn { color: var(--m3-on-surface-var); }
+
+    /* nothing ticked - say so on the board rather than showing a blank page */
+    .board-empty { grid-column: 1 / -1; text-align: center; padding: 44px 16px;
+      border: 1px dashed var(--m3-outline-var); border-radius: var(--r-lg);
+      color: var(--m3-on-surface-var); font-size: 13.5px; }
+    .board-empty .btn { margin-top: 12px; }
+
     .meta { font-size: 12.5px; color: var(--m3-on-surface-var); display: flex; align-items: center; gap: 8px; }
     .meta .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--m3-ok); }
     .meta .dot.busy { background: var(--m3-warn); animation: blink 1s ease-in-out infinite; }
@@ -235,9 +313,41 @@
     <section class="heads" id="heads"></section>
 
     <div class="bar">
-      <div class="seg" role="group" aria-label="Quantity">
-        <button data-unit="1" class="on">Per gram</button>
-        <button data-unit="10">Per 10 g</button>
+      <div class="bar-left">
+        <div class="picker" id="picker">
+          <button class="pick-btn" id="pickBtn" aria-expanded="false" aria-haspopup="dialog"
+                  title="Choose which jewellers the board shows">
+            <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+              <path fill="currentColor" d="M3.6 5.2h16.8l-6.5 7.6v5.4l-3.8 2.2v-7.6z"/>
+            </svg>
+            <span id="pickLabel">All jewellers</span>
+            <svg class="chev" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+              <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+            </svg>
+          </button>
+          <div class="pop" id="pickPop" role="dialog" aria-label="Choose jewellers" hidden>
+            <label class="pop-search">
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <path fill="currentColor" d="M10.5 3a7.5 7.5 0 1 0 4.55 13.46l4.24 4.25 1.42-1.42-4.25-4.24A7.5 7.5 0 0 0 10.5 3Zm0 2a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Z"/>
+              </svg>
+              <input id="pickSearch" type="text" placeholder="Search jewellers…"
+                     autocomplete="off" spellcheck="false" aria-label="Search jewellers" />
+            </label>
+            <div class="pop-list" id="pickList"></div>
+            <div class="pop-foot">
+              <span id="pickCount"></span>
+              <span class="pop-acts">
+                <button class="btn btn-text btn-sm" id="pickNone">None</button>
+                <button class="btn btn-text btn-sm" id="pickAll">All</button>
+                <button class="btn btn-filled btn-sm" id="pickApply" disabled>Apply</button>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="seg" role="group" aria-label="Quantity">
+          <button data-unit="1" class="on">Per gram</button>
+          <button data-unit="10">Per 10 g</button>
+        </div>
       </div>
       <span class="meta" id="statusText">Loading…</span>
     </div>

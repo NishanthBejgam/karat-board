@@ -15,6 +15,18 @@ let manualFor = null;
 const CUTS = {};
 const cutFor = (id) => (CUTS[id] === 2 || CUTS[id] === 3) ? CUTS[id] : 0;
 
+/* Which jewellers are on the board. Stored as the ones switched OFF, never as
+   the ones switched on: store the "on" list and a merchant added next month
+   would arrive silently unticked for everyone who ever touched the filter. */
+const HIDDEN = new Set(JSON.parse(localStorage.getItem("kb-hidden") || "[]"));
+const shows = (m) => !HIDDEN.has(m.id);
+function setHidden(ids) {
+  HIDDEN.clear();
+  ids.forEach((id) => HIDDEN.add(id));
+  localStorage.setItem("kb-hidden", JSON.stringify([...HIDDEN]));
+  paint();
+}
+
 const $ = (id) => document.getElementById(id);
 const money = (v) => v == null ? null :
   "₹" + Math.round(v * UNIT).toLocaleString("en-IN");
@@ -108,7 +120,10 @@ const has = (m) => (m.rate && (m.rate.buy24 || m.rate.buy22)) ? 1 : 0;
 
 function paint() {
   if (!STATE) return;
-  const ms = STATE.merchants;
+  // Everything below reckons on the picked merchants only. "Cheapest 24K"
+  // across jewellers you have switched off would be a number about nobody.
+  const ms = STATE.merchants.filter(shows);
+  paintPicker();
 
   // The cheapest live 24K on the board, ignoring anything that failed.
   const live = ms.filter((m) => m.rate && m.rate.buy24);
@@ -117,13 +132,19 @@ function paint() {
   const best22 = live22.length ? Math.min(...live22.map((m) => m.rate.buy22)) : null;
   const high24 = live.length ? Math.max(...live.map((m) => m.rate.buy24)) : null;
 
-  paintHeads(live, best24, best22, high24);
+  paintHeads(live, best24, best22, high24, ms);
 
   // Merchants with no numbers sink to the bottom, so the rates you came for are
   // the first thing on screen. Within each group the merchants.json order holds
   // (Array#sort is stable).
   const ordered = [...ms].sort((a, b) => has(b) - has(a));
   $("board").innerHTML = "";
+  if (!ordered.length) {
+    $("board").innerHTML =
+      '<div class="board-empty">No jewellers picked.' +
+      '<div><button class="btn btn-tonal btn-sm" id="emptyAll">Show them all</button></div></div>';
+    $("emptyAll").onclick = () => setHidden([]);
+  }
   ordered.forEach((m) => $("board").appendChild(card(m, best24)));
 
   const busy = STATE.refreshing;
@@ -140,16 +161,16 @@ function paint() {
   $("refreshBtn").hidden = STATIC;
 }
 
-function paintHeads(live, best24, best22, high24) {
+function paintHeads(live, best24, best22, high24, ms) {
   const cheapest = live.find((m) => m.rate.buy24 === best24);
   const spread = (best24 != null && high24 != null) ? high24 - best24 : null;
   const heads = [
     { k: "Cheapest 24K", v: money(best24), w: cheapest ? cheapest.name : "no rate yet" },
     { k: "Cheapest 22K", v: money(best22),
-      w: (() => { const c = STATE.merchants.find((m) => m.rate && m.rate.buy22 === best22);
+      w: (() => { const c = ms.find((m) => m.rate && m.rate.buy22 === best22);
                   return c ? c.name : "no rate yet"; })() },
     { k: "Spread across the board", v: spread == null ? null : money(spread),
-      w: live.length + " of " + STATE.merchants.length + " merchants reporting" },
+      w: live.length + " of " + ms.length + " merchants reporting" },
   ];
   $("heads").innerHTML = heads.map((h) => `
     <div class="head">
@@ -157,6 +178,127 @@ function paintHeads(live, best24, best22, high24) {
       <span class="v">${h.v || "—"}</span>
       <span class="w">${esc(h.w)}</span>
     </div>`).join("");
+}
+
+/* ---- The jeweller picker ----
+   One button, three ways in: type to search, tick to multi-select, or "Only" to
+   narrow to a single jeweller in one click. The list is rebuilt from STATE each
+   paint so a merchant added to merchants.json shows up here without touching
+   this file. */
+/* Ticks go into a DRAFT, not onto the board. Committing each tick as it
+   happened meant the board repainted under you once per jeweller - and the
+   list, rebuilt each time, threw away its scroll position, so picking five
+   meant five repaints and five hunts back down the list. The draft lives only
+   while the popover is open; closing it without pressing Apply throws it away. */
+let DRAFT = null;
+const draftShows = (m) => !(DRAFT || HIDDEN).has(m.id);
+const draftDirty = () =>
+  DRAFT && (DRAFT.size !== HIDDEN.size || [...DRAFT].some((id) => !HIDDEN.has(id)));
+
+function paintPicker() {
+  const all = STATE.merchants;
+  const on = all.filter(shows);
+  const label = on.length === all.length ? "All jewellers"
+    : on.length === 1 ? (on[0].short || on[0].name)
+    : on.length + " of " + all.length;
+  $("pickLabel").textContent = label;
+  $("pickBtn").classList.toggle("some", on.length !== all.length);
+
+  const picked = all.filter(draftShows);
+  $("pickCount").textContent = picked.length + " of " + all.length +
+    (draftDirty() ? " picked" : " shown");
+  $("pickApply").disabled = !draftDirty();
+
+  const q = $("pickSearch").value.trim().toLowerCase();
+  const rows = all.filter((m) =>
+    !q || (m.name + " " + (m.short || "")).toLowerCase().includes(q));
+
+  const list = $("pickList");
+  if (!rows.length) {
+    list.innerHTML = '<div class="pop-empty">No jeweller by that name.</div>';
+    return;
+  }
+  // Rebuilt in place, scroll kept: the list must not jump to the top between
+  // one tick and the next.
+  const top = list.scrollTop;
+  list.innerHTML = rows.map((m) => `
+    <button class="pop-row ${draftShows(m) ? "on" : ""} ${draftShows(m) ? "" : "draft-off"}"
+            data-id="${esc(m.id)}" role="checkbox" aria-checked="${draftShows(m)}">
+      <span class="tick">
+        <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+          <path fill="currentColor" d="M9.6 16.2 5.4 12l-1.4 1.4 5.6 5.6L20.4 7.8 19 6.4z"/>
+        </svg>
+      </span>
+      <span class="mark">${mark(m)}</span>
+      <span class="rn">${esc(m.name)}</span>
+      <span class="only" data-only="${esc(m.id)}" role="button" tabindex="0">ONLY</span>
+    </button>`).join("");
+  list.scrollTop = top;
+
+  list.querySelectorAll(".pop-row").forEach((row) => {
+    row.onclick = (ev) => {
+      if (!DRAFT) DRAFT = new Set(HIDDEN);
+      const only = ev.target.closest("[data-only]");
+      if (only) {
+        DRAFT = new Set(all.map((m) => m.id).filter((id) => id !== only.dataset.only));
+      } else {
+        const id = row.dataset.id;
+        DRAFT.has(id) ? DRAFT.delete(id) : DRAFT.add(id);
+      }
+      paintPicker();
+    };
+  });
+}
+
+{
+  const picker = $("picker");
+  const openPicker = (open) => {
+    picker.classList.toggle("open", open);
+    $("pickPop").hidden = !open;
+    $("pickBtn").setAttribute("aria-expanded", String(open));
+    // Opening starts a fresh draft; closing abandons whatever was not applied.
+    DRAFT = open ? new Set(HIDDEN) : null;
+    if (!open) $("pickSearch").value = "";
+    paintPicker();
+    if (open) $("pickSearch").focus();
+  };
+  const apply = () => {
+    if (!draftDirty()) return;
+    const n = STATE.merchants.filter(draftShows).length;
+    setHidden([...DRAFT]);
+    openPicker(false);
+    snack(n === STATE.merchants.length ? "Showing every jeweller"
+      : n === 1 ? "Showing one jeweller"
+      : "Showing " + n + " jewellers");
+  };
+  $("pickBtn").onclick = () => openPicker($("pickPop").hidden);
+  $("pickSearch").oninput = () => paintPicker();
+  $("pickApply").onclick = apply;
+  $("pickAll").onclick = () => { DRAFT = new Set(); paintPicker(); };
+  $("pickNone").onclick = () => {
+    DRAFT = new Set(STATE.merchants.map((m) => m.id));
+    paintPicker();
+  };
+  // Dismiss on mousedown, not click: a tick rebuilds the list under the
+  // pointer, so by the time a click has bubbled to the document its target is
+  // detached and contains() would say "outside" for a press that was inside.
+  document.addEventListener("mousedown", (ev) => {
+    if (!picker.contains(ev.target)) openPicker(false);
+  });
+  document.addEventListener("keydown", (ev) => {
+    if ($("pickPop").hidden) return;
+    if (ev.key === "Escape") { openPicker(false); $("pickBtn").focus(); }
+    // Enter commits the whole draft, wherever the focus is in the popover.
+    if (ev.key === "Enter" && ev.target !== $("pickSearch")) apply();
+  });
+  // Enter on a one-hit search ticks that one; a second Enter, with the search
+  // now showing more than one row again, commits.
+  $("pickSearch").onkeydown = (ev) => {
+    if (ev.key !== "Enter") return;
+    const rows = $("pickList").querySelectorAll(".pop-row");
+    if (rows.length === 1) { rows[0].click(); $("pickSearch").value = ""; paintPicker(); }
+    else apply();
+  };
 }
 
 /* ---- Merchant marks ----
