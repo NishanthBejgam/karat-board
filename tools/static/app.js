@@ -223,6 +223,10 @@ const MARKS = {
          <path d="m13.5 12.6 4.6 6.8"/>`,
   // two interlocking bands
   png: `<circle cx="9.2" cy="12" r="5.6"/><circle cx="14.8" cy="12" r="5.6"/>`,
+  // their two crossed ribbon loops, the ones that meet in a heart at the foot
+  joyalukkas: `<g><path d="M12 20.5C8.8 15.8 8.8 8.2 12 4c3.2 4.2 3.2 11.8 0 16.5Z" transform="rotate(-26 12 20.5)" opacity=".55"/><path d="M12 20.5C8.8 15.8 8.8 8.2 12 4c3.2 4.2 3.2 11.8 0 16.5Z" transform="rotate(26 12 20.5)"/></g>`,
+  // the looped paisley that stands before their letters, with its top curls
+  senco: `<g><path d="M12 4.2c-2.7 4.8-4.5 8.6-4.5 11.6 0 2.6 2 4.4 4 4.4 2.1 0 3.9-1.7 3.9-4.1 0-3.4-1.6-7.2-3.4-11.9Z" transform="rotate(-9 12 4.2)" opacity=".55"/><path d="M12 4.2c-2.2 4-3.7 7.1-3.7 9.6 0 2.2 1.6 3.6 3.3 3.6 1.7 0 3.2-1.4 3.2-3.4 0-2.8-1.3-5.9-2.8-9.8Z" transform="rotate(16 12 4.2)"/><path d="M12 4.2c-.8-1.5-2.5-1.9-3.2-.8"/></g>`,
   // serif B, detached dot, swoosh
   bhima: `<path d="M9 4.8v11.4"/>
           <path d="M9 4.8h3.4a2.8 2.8 0 0 1 0 5.6H9"/>

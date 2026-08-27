@@ -19,6 +19,7 @@
     "                        the premium the merchant publishes (Aspect)",
     "     link_only   nothing to scrape - tile links out (or key a rate in by hand)",
     "  source.fetch    curl (Windows curl.exe - gets past bot walls) or urllib",
+    "  source.headers  extra request headers, for a feed that is open but keyed",
     "  buy/sell.k24/k22  { pattern, divide }  pattern group 1 is the number,",
     "                    divide turns it into a per-gram rate (10 for a 10g price)",
     "  deriveK24  true = the site only prints 22K, so 24K = 22K x 24/22",
@@ -299,6 +300,53 @@
           },
           "k22": {
             "pattern": "Online Gold Rate 22 KT \\(916\\)\",\"rate\":\"₹([\\d,\\.]+)/g",
+            "divide": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "joyalukkas",
+      "name": "Joyalukkas",
+      "short": "Joyalukkas",
+      "site": "https://www.joyalukkas.in/goldrate",
+      "note": "One India rate, off the getgoldrates GraphQL call their rate page makes.",
+      "source": {
+        "adapter": "raw_regex",
+        "fetch": "curl",
+        "url": "https://www.joyalukkas.in/graphql?query=query+getgoldrates%7Bgetgoldrates%7BId+Message+Status+metal_rate_time+Data%7BId+BRANCH_CODE+BRANCH_NAME+GOLD_22KT_RATE+GOLD_24KT_RATE+__typename%7D__typename%7D%7D&operationName=getgoldrates&variables=%7B%7D",
+        "buy": {
+          "k24": {
+            "pattern": "\"GOLD_24KT_RATE\":\"([\\d.]+)\"",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "\"GOLD_22KT_RATE\":\"([\\d.]+)\"",
+            "divide": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "senco",
+      "name": "Senco Gold & Diamonds",
+      "short": "Senco",
+      "site": "https://sencogoldanddiamonds.com/gold-price-calculator",
+      "note": "The rate list behind their price calculator. 24K is the 99.99 line, so it sits with the others.",
+      "source": {
+        "adapter": "raw_regex",
+        "fetch": "urllib",
+        "url": "https://api.sencogoldanddiamonds.com/calculator/list",
+        "headers": {
+          "Client-ID": "63866e9b-b9b8-4186-ac1c-b0855390f4df"
+        },
+        "buy": {
+          "k24": {
+            "pattern": "\"name\":\"99\\.99\",\"display_name\":\"24K Gold\",\"price\":([\\d.]+)",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "\"name\":\"91\\.66\",\"display_name\":\"22K Gold\",\"price\":([\\d.]+)",
             "divide": 1
           }
         }

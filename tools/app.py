@@ -168,7 +168,7 @@ def now_iso():
 #  Fetching
 # --------------------------------------------------------------------------- #
 def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params="",
-          proxy_ok=True, proxy_max=3):
+          proxy_ok=True, proxy_max=3, headers=None):
     """Return the raw bytes of a page.
 
     If the site refuses this IP and a proxy is configured, the request is made
@@ -180,7 +180,7 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params="",
     through. So the fetch mode is per-merchant config, not a global choice.
     """
     try:
-        return _fetch_once(url, mode, timeout)
+        return _fetch_once(url, mode, timeout, headers)
     except Refused:
         if not (retry and PROXY_URL and PROXY_KEY):
             raise
@@ -219,7 +219,8 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params="",
                 break
             spent += 1
             try:
-                body = _fetch_once(proxied(url, rung), mode, timeout + 45)
+                body = _fetch_once(proxied(url, rung), mode, timeout + 45,
+                                   headers)
                 print("  refused directly - through the proxy%s%s" % (
                     " (%s)" % rung if rung else "",
                     " on retry" if attempt else ""))
@@ -233,15 +234,20 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params="",
     raise last or Refused("refused, and every proxy route failed")
 
 
-def _fetch_once(url, mode, timeout):
+def _fetch_once(url, mode, timeout, headers=None):
+    # A few feeds are open but keyed: Senco's calculator answers 401 to anyone
+    # who does not send the Client-ID its own storefront sends. That key is a
+    # per-merchant header, not a secret, so it lives in merchants.json.
+    extra = list((headers or {}).items())
     if mode == "curl":
         # The status code is appended after a marker: curl exits 0 on a 403, and
         # a Cloudflare block page parsed as HTML looks exactly like "the pattern
         # stopped matching". Those are very different problems, so name them.
         out = subprocess.run(
             [CURL, "-sL", "--compressed", "--max-time", str(timeout),
-             "-A", UA, "-H", "Accept-Language: en-IN,en;q=0.9",
-             "-w", "\n%s%%{http_code}" % _STATUS_MARK, url],
+             "-A", UA, "-H", "Accept-Language: en-IN,en;q=0.9"]
+            + [a for k, v in extra for a in ("-H", "%s: %s" % (k, v))]
+            + ["-w", "\n%s%%{http_code}" % _STATUS_MARK, url],
             capture_output=True, timeout=timeout + 15,
         )
         if out.returncode != 0:
@@ -257,9 +263,9 @@ def _fetch_once(url, mode, timeout):
             raise RuntimeError("empty response")
         return body
 
-    req = urllib.request.Request(url, headers={
-        "User-Agent": UA, "Accept-Language": "en-IN,en;q=0.9",
-    })
+    head = {"User-Agent": UA, "Accept-Language": "en-IN,en;q=0.9"}
+    head.update(dict(extra))
+    req = urllib.request.Request(url, headers=head)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read()
@@ -352,7 +358,8 @@ def read_merchant(m, proxy_ok=True):
     raw = fetch(src["url"], src.get("fetch") or "urllib",
                 proxy_params=src.get("proxyParams") or "",
                 proxy_ok=proxy_ok,
-                proxy_max=int(src.get("proxyMaxAttempts") or 3))
+                proxy_max=int(src.get("proxyMaxAttempts") or 3),
+                headers=src.get("headers"))
 
     if adapter == "text_regex":
         body = to_text(raw)
