@@ -188,6 +188,28 @@
       }
     },
     {
+      "id": "thangamayil",
+      "name": "Thangamayil Jewellery",
+      "short": "Thangamayil",
+      "site": "https://www.thangamayil.com/scheme/index/rateshistory/",
+      "note": "Madurai. Rates run in the ticker on their rates-history page, per gram.",
+      "source": {
+        "adapter": "text_regex",
+        "fetch": "curl",
+        "url": "https://www.thangamayil.com/scheme/index/rateshistory/",
+        "buy": {
+          "k24": {
+            "pattern": "GOLD RATE 24k\\s*\\(1gm\\)\\s*-\\s*₹\\s*([\\d,]+)",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "GOLD RATE 22k\\s*\\(1gm\\)\\s*-\\s*₹\\s*([\\d,]+)",
+            "divide": 1
+          }
+        }
+      }
+    },
+    {
       "id": "mmtc",
       "name": "MMTC-PAMP",
       "short": "MMTC-PAMP",
