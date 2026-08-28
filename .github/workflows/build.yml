@@ -7,6 +7,12 @@
 name: Build and publish
 
 on:
+  # An outside clock can wake this, because GitHub's own is unreliable here:
+  # asked hourly on quiet minutes, it delivered 2 runs in 16 hours. Inert until
+  # something POSTs to the repository's dispatches endpoint with this type.
+  repository_dispatch:
+    types: [sweep]
+
   schedule:
     # Asked hourly, on odd minutes, in two independent entries.
     #

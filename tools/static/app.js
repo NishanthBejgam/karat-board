@@ -154,7 +154,7 @@ function paint() {
     : STATE.refreshMinutes + " minutes";
   const line = busy ? "Reading merchants…"
     : "Updated " + ago(STATE.lastRefresh) +
-      (STATIC ? " · refreshes every " : " · re-reads itself every ") + every;
+      (STATIC ? " · refreshes through the day" : " · re-reads itself every " + every);
   $("status").title = line;
   $("statusText").textContent = line;
   $("refreshBtn").disabled = busy;
