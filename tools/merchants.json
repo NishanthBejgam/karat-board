@@ -54,14 +54,14 @@
       "name": "Tanishq",
       "short": "Tanishq",
       "site": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
-      "note": "Both purities come straight off the rate page's data attributes. Proxy paused 1 Sep: it was failing too, so every call bought nothing.",
+      "note": "Both purities come straight off the rate page's data attributes.",
       "source": {
         "adapter": "raw_regex",
         "fetch": "curl",
         "url": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
         "proxyParams": "proxy_country=GB&proxy_type=residential&browser=true",
         "proxyAfterHours": 24,
-        "proxyMaxAttempts": 0,
+        "proxyMaxAttempts": 1,
         "buy": {
           "k24": {
             "pattern": "data-goldrate24kt=\"([\\d.]+)\"",
@@ -308,7 +308,7 @@
       "name": "Bhima Jewellers",
       "short": "Bhima",
       "site": "https://bhimagold.com",
-      "note": "Online gold rate as published on the storefront. Proxy paused 1 Sep: it was failing too, so every call bought nothing.",
+      "note": "Online gold rate as published on the storefront.",
       "source": {
         "adapter": "raw_regex",
         "fetch": "curl",
@@ -325,7 +325,7 @@
             "divide": 1
           }
         },
-        "proxyMaxAttempts": 0
+        "proxyMaxAttempts": 1
       }
     },
     {

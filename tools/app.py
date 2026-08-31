@@ -168,7 +168,7 @@ def now_iso():
 #  Fetching
 # --------------------------------------------------------------------------- #
 def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params="",
-          proxy_ok=True, proxy_max=3, headers=None):
+          proxy_ok=True, proxy_max=3, headers=None, who="?"):
     """Return the raw bytes of a page.
 
     If the site refuses this IP and a proxy is configured, the request is made
@@ -221,8 +221,8 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params="",
             try:
                 body = _fetch_once(proxied(url, rung), mode, timeout + 45,
                                    headers)
-                print("  refused directly - through the proxy%s%s" % (
-                    " (%s)" % rung if rung else "",
+                print("  %s: refused directly - through the proxy%s%s [credit spent]" % (
+                    who, " (%s)" % rung if rung else "",
                     " on retry" if attempt else ""))
                 return body
             except Refused as exc:
@@ -355,7 +355,7 @@ def read_merchant(m, proxy_ok=True):
         out = read_socketio(src)
         return finish(src, out)
 
-    raw = fetch(src["url"], src.get("fetch") or "urllib",
+    raw = fetch(src["url"], src.get("fetch") or "urllib", who=m.get("id") or "?",
                 proxy_params=src.get("proxyParams") or "",
                 proxy_ok=proxy_ok,
                 proxy_max=int(src.get("proxyMaxAttempts") or 3),
@@ -526,6 +526,14 @@ def pdf_text(raw):
 # --------------------------------------------------------------------------- #
 #  The refresh pass
 # --------------------------------------------------------------------------- #
+# What a merchant gets if merchants.json says nothing. "No ration" used to be
+# the default and it was a trap: any site that starts refusing datacenter IPs
+# then reaches for the paid proxy on every single build - 48 a day - and
+# succeeds quietly, so nothing looks wrong until the credit meter is read.
+DEFAULT_PROXY_AFTER_HOURS = 6
+DEFAULT_PROXY_MAX_ATTEMPTS = 2
+
+
 def may_use_proxy(prev_rate, after_hours):
     """Has enough time passed since we last spent a credit on this merchant?
 
@@ -556,7 +564,8 @@ def refresh_all(only=None):
             if only and m["id"] != only:
                 continue
             entry = {"fetched": now_iso()}
-            after = float((m.get("source") or {}).get("proxyAfterHours") or 0)
+            src_cfg = m.get("source") or {}
+            after = float(src_cfg.get("proxyAfterHours", DEFAULT_PROXY_AFTER_HOURS))
             prev_rate = load_board()["rates"].get(m["id"]) or {}
             proxy_ok = may_use_proxy(prev_rate, after)
             try:
