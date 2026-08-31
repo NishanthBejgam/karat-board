@@ -50,31 +50,6 @@
       }
     },
     {
-      "id": "tanishq",
-      "name": "Tanishq",
-      "short": "Tanishq",
-      "site": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
-      "note": "Both purities come straight off the rate page's data attributes.",
-      "source": {
-        "adapter": "raw_regex",
-        "fetch": "curl",
-        "url": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
-        "proxyParams": "proxy_country=GB&proxy_type=residential&browser=true",
-        "proxyAfterHours": 24,
-        "proxyMaxAttempts": 1,
-        "buy": {
-          "k24": {
-            "pattern": "data-goldrate24kt=\"([\\d.]+)\"",
-            "divide": 1
-          },
-          "k22": {
-            "pattern": "data-goldrate22kt=\"([\\d.]+)\"",
-            "divide": 1
-          }
-        }
-      }
-    },
-    {
       "id": "kalyan",
       "name": "Kalyan Jewellers",
       "hideLink": true,
@@ -188,28 +163,6 @@
       }
     },
     {
-      "id": "thangamayil",
-      "name": "Thangamayil Jewellery",
-      "short": "Thangamayil",
-      "site": "https://www.thangamayil.com/scheme/index/rateshistory/",
-      "note": "Madurai. Rates run in the ticker on their rates-history page, per gram.",
-      "source": {
-        "adapter": "text_regex",
-        "fetch": "curl",
-        "url": "https://www.thangamayil.com/scheme/index/rateshistory/",
-        "buy": {
-          "k24": {
-            "pattern": "GOLD RATE 24k\\s*\\(1gm\\)\\s*-\\s*₹\\s*([\\d,]+)",
-            "divide": 1
-          },
-          "k22": {
-            "pattern": "GOLD RATE 22k\\s*\\(1gm\\)\\s*-\\s*₹\\s*([\\d,]+)",
-            "divide": 1
-          }
-        }
-      }
-    },
-    {
       "id": "mmtc",
       "name": "MMTC-PAMP",
       "short": "MMTC-PAMP",
@@ -304,31 +257,6 @@
       }
     },
     {
-      "id": "bhima",
-      "name": "Bhima Jewellers",
-      "short": "Bhima",
-      "site": "https://bhimagold.com",
-      "note": "Online gold rate as published on the storefront.",
-      "source": {
-        "adapter": "raw_regex",
-        "fetch": "curl",
-        "url": "https://www.bhimagold.com/",
-        "proxyParams": "proxy_country=IN&browser=false",
-        "proxyAfterHours": 4,
-        "buy": {
-          "k24": {
-            "pattern": "Online Gold Rate 24 KT \\(999\\)\",\"rate\":\"₹([\\d,\\.]+)/g",
-            "divide": 1
-          },
-          "k22": {
-            "pattern": "Online Gold Rate 22 KT \\(916\\)\",\"rate\":\"₹([\\d,\\.]+)/g",
-            "divide": 1
-          }
-        },
-        "proxyMaxAttempts": 1
-      }
-    },
-    {
       "id": "joyalukkas",
       "name": "Joyalukkas",
       "short": "Joyalukkas",
@@ -370,6 +298,78 @@
           },
           "k22": {
             "pattern": "\"name\":\"91\\.66\",\"display_name\":\"22K Gold\",\"price\":([\\d.]+)",
+            "divide": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "thangamayil",
+      "name": "Thangamayil Jewellery",
+      "short": "Thangamayil",
+      "site": "https://www.thangamayil.com/scheme/index/rateshistory/",
+      "note": "Madurai. Rates run in the ticker on their rates-history page, per gram. Refreshes every 6 h - their site refuses our servers, so it comes through a proxy.",
+      "source": {
+        "adapter": "text_regex",
+        "fetch": "curl",
+        "url": "https://www.thangamayil.com/scheme/index/rateshistory/",
+        "buy": {
+          "k24": {
+            "pattern": "GOLD RATE 24k\\s*\\(1gm\\)\\s*-\\s*₹\\s*([\\d,]+)",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "GOLD RATE 22k\\s*\\(1gm\\)\\s*-\\s*₹\\s*([\\d,]+)",
+            "divide": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "bhima",
+      "name": "Bhima Jewellers",
+      "short": "Bhima",
+      "site": "https://bhimagold.com",
+      "note": "Online gold rate as published on the storefront. Refreshes every 4 h - their site refuses our servers, so it comes through a proxy.",
+      "source": {
+        "adapter": "raw_regex",
+        "fetch": "curl",
+        "url": "https://www.bhimagold.com/",
+        "proxyParams": "proxy_country=IN&browser=false",
+        "proxyAfterHours": 4,
+        "buy": {
+          "k24": {
+            "pattern": "Online Gold Rate 24 KT \\(999\\)\",\"rate\":\"₹([\\d,\\.]+)/g",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "Online Gold Rate 22 KT \\(916\\)\",\"rate\":\"₹([\\d,\\.]+)/g",
+            "divide": 1
+          }
+        },
+        "proxyMaxAttempts": 1
+      }
+    },
+    {
+      "id": "tanishq",
+      "name": "Tanishq",
+      "short": "Tanishq",
+      "site": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
+      "note": "Both purities come straight off the rate page's data attributes. Refreshes every 24 h - their site refuses our servers, so it comes through a proxy.",
+      "source": {
+        "adapter": "raw_regex",
+        "fetch": "curl",
+        "url": "https://www.tanishq.co.in/gold-rate.html?lang=en_IN",
+        "proxyParams": "proxy_country=GB&proxy_type=residential&browser=true",
+        "proxyAfterHours": 24,
+        "proxyMaxAttempts": 1,
+        "buy": {
+          "k24": {
+            "pattern": "data-goldrate24kt=\"([\\d.]+)\"",
+            "divide": 1
+          },
+          "k22": {
+            "pattern": "data-goldrate22kt=\"([\\d.]+)\"",
             "divide": 1
           }
         }
