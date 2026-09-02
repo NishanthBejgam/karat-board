@@ -476,7 +476,7 @@ function card(m, best24) {
           title="Flip the tile to what they would pay you, ${c}% under">${c}% cut</button>`).join("")}
       </span></div>` : ""}
 
-    ${m.spark && m.spark.length > 2 ? spark(m.spark) : ""}
+    ${!isSilver() && m.spark && m.spark.length > 2 ? spark(m.spark) : ""}
 
 
 
