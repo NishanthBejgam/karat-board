@@ -23,7 +23,13 @@ let manualFor = null;
    every filter off, so a reload always answers "what is gold today?" and never
    greets you with a buyback you switched on yesterday. */
 const CUTS = {};
-const cutFor = (id) => (CUTS[id] === 2 || CUTS[id] === 3) ? CUTS[id] : 0;
+
+/* What a merchant keeps when they buy the metal back. Gold changes hands near
+   its rate, so 2-3% covers it. Silver does not: the spread on a buyback is far
+   wider, and 10-15% is the honest range - quoting a silver buyback at 2% would
+   flatter it badly. So the chips follow the metal on show. */
+const CUT_OPTIONS = () => (isSilver() ? [10, 15] : [2, 3]);
+const cutFor = (id) => CUT_OPTIONS().includes(CUTS[id]) ? CUTS[id] : 0;
 
 /* Which jewellers are on the board. Stored as the ones switched OFF, never as
    the ones switched on: store the "on" list and a merchant added next month
@@ -81,6 +87,8 @@ function applyMetal(next, save) {
   if (tc) tc.content = isSilver() ? "#4c6072" : "#8a5f14";
   document.querySelectorAll("#metalSeg button").forEach(
     (b) => b.classList.toggle("on", b.dataset.metal === METAL));
+  // 3% means nothing once the chips read 10 and 15, so a switch clears them.
+  Object.keys(CUTS).forEach((k) => delete CUTS[k]);
   if (save) localStorage.setItem("kb-metal", METAL);
 }
 document.querySelectorAll("#metalSeg button").forEach((b) => {
@@ -464,10 +472,8 @@ function card(m, best24) {
     </div>
 
     ${rateOf(r) ? `<div class="cut-row"><span class="cuts">
-        <button data-cut="2" class="${cut === 2 ? "on" : ""}"
-                title="Flip the 24K tile to what they would pay you, 2% under">2% cut</button>
-        <button data-cut="3" class="${cut === 3 ? "on" : ""}"
-                title="Flip the 24K tile to what they would pay you, 3% under">3% cut</button>
+        ${CUT_OPTIONS().map((c) => `<button data-cut="${c}" class="${cut === c ? "on" : ""}"
+          title="Flip the tile to what they would pay you, ${c}% under">${c}% cut</button>`).join("")}
       </span></div>` : ""}
 
     ${m.spark && m.spark.length > 2 ? spark(m.spark) : ""}
