@@ -285,5 +285,11 @@ html[data-metal="silver"][data-theme="dark"] {
    slate while silver is live. Gold is untouched. */
 html[data-metal="silver"] .seg.metal button.on,
 html[data-metal="silver"] .badge:not(.manual) { color: #14202b; }
-html[data-metal="silver"] .brand-mark { color: #14202b; }
-html[data-metal="silver"] .brand-mark svg path { stroke: #14202b; fill: #14202b; }
+/* The mark is the exception: solid slate bars on a light tile read as a
+   sticker stuck on top. They want to look pressed into the metal, so they
+   take the same ink at part strength - dark enough to hold their shape,
+   soft enough to belong to the tile. */
+html[data-metal="silver"] .brand-mark { color: rgba(18, 30, 41, .58); }
+html[data-metal="silver"] .brand-mark svg path {
+  stroke: rgba(18, 30, 41, .58); fill: rgba(18, 30, 41, .58);
+}
