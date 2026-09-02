@@ -87,6 +87,9 @@ function applyMetal(next, save) {
   if (tc) tc.content = isSilver() ? "#4c6072" : "#8a5f14";
   document.querySelectorAll("#metalSeg button").forEach(
     (b) => b.classList.toggle("on", b.dataset.metal === METAL));
+  // the knob rides to the right half for silver; CSS does the travelling
+  const seg = $("metalSeg");
+  if (seg) seg.classList.toggle("right", isSilver());
   // 3% means nothing once the chips read 10 and 15, so a switch clears them.
   Object.keys(CUTS).forEach((k) => delete CUTS[k]);
   if (save) localStorage.setItem("kb-metal", METAL);

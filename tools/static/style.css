@@ -276,3 +276,14 @@ html[data-metal="silver"][data-theme="dark"] {
   --shadow-2: 0 4px 14px rgba(0,0,0,.55);
   --shadow-3: 0 10px 30px rgba(0,0,0,.6);
 }
+
+/* ---- Ink on silver ----
+   Gold's gradient runs dark (#c9971f into #8a5f14), so white printed on it
+   read cleanly. Silver's runs the other way - #9fb6c8 in the middle, and the
+   foil highlight is nearly white - so white ink on it sits at about 2:1 and
+   vanishes altogether on the badge. Anything set ON the metal turns dark
+   slate while silver is live. Gold is untouched. */
+html[data-metal="silver"] .seg.metal button.on,
+html[data-metal="silver"] .badge:not(.manual) { color: #14202b; }
+html[data-metal="silver"] .brand-mark { color: #14202b; }
+html[data-metal="silver"] .brand-mark svg path { stroke: #14202b; fill: #14202b; }
