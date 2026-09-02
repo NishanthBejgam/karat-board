@@ -2,6 +2,16 @@
 
 let STATE = null;
 let UNIT = 1;               // 1 = per gram, 10 = per 10 grams
+
+/* Which metal the whole page is about. Switching it is not a filter on top of
+   a gold page - the palette, the mark, the tab icon and the merchant list all
+   follow, because a silver board that looks golden is just wrong. Only the
+   merchants who publish silver in a response we already fetch appear in silver;
+   the rest are not "missing", they simply do not price it publicly. */
+let METAL = "gold";
+const isSilver = () => METAL === "silver";
+const rateOf = (r) => isSilver() ? (r || {}).buyAg : (r || {}).buy24;
+const publishes = (m) => rateOf(m.rate) != null;
 let manualFor = null;
 
 /* No jeweller publishes what they will pay you back - it is the 24K rate minus
@@ -62,6 +72,22 @@ document.querySelectorAll(".seg button").forEach((b) => {
   if (saved === "10") document.querySelector('.seg button[data-unit="10"]').click();
 }
 
+/* ---- the metal switch ---- */
+function applyMetal(next, save) {
+  METAL = next === "silver" ? "silver" : "gold";
+  document.documentElement.dataset.metal = METAL;
+  const fav = $("favicon"), tc = $("themeColor");
+  if (fav) fav.href = isSilver() ? "favicon-silver.svg" : "favicon.svg";
+  if (tc) tc.content = isSilver() ? "#4c6072" : "#8a5f14";
+  document.querySelectorAll("#metalSeg button").forEach(
+    (b) => b.classList.toggle("on", b.dataset.metal === METAL));
+  if (save) localStorage.setItem("kb-metal", METAL);
+}
+document.querySelectorAll("#metalSeg button").forEach((b) => {
+  b.onclick = () => { applyMetal(b.dataset.metal, true); paint(); };
+});
+applyMetal(localStorage.getItem("kb-metal") || "gold", false);
+
 /* ---- time helpers ---- */
 function ago(iso) {
   if (!iso) return "never";
@@ -116,23 +142,24 @@ async function refresh(id) {
 $("refreshBtn").onclick = () => refresh(null);
 
 /* ---- painting ---- */
-const has = (m) => (m.rate && (m.rate.buy24 || m.rate.buy22)) ? 1 : 0;
+const has = (m) => (m.rate && (rateOf(m.rate) || (!isSilver() && m.rate.buy22))) ? 1 : 0;
 
 function paint() {
   if (!STATE) return;
   // Everything below reckons on the picked merchants only. "Cheapest 24K"
   // across jewellers you have switched off would be a number about nobody.
-  const ms = STATE.merchants.filter(shows);
+  // In silver, the board is only the merchants who publish silver at all.
+  const ms = STATE.merchants.filter(shows).filter((m) => !isSilver() || publishes(m));
   paintPicker();
 
-  // The cheapest live 24K on the board, ignoring anything that failed.
-  const live = ms.filter((m) => m.rate && m.rate.buy24);
-  const best24 = live.length ? Math.min(...live.map((m) => m.rate.buy24)) : null;
+  // The cheapest live rate on the board, ignoring anything that failed.
+  const live = ms.filter((m) => m.rate && rateOf(m.rate));
+  const best = live.length ? Math.min(...live.map((m) => rateOf(m.rate))) : null;
+  const high = live.length ? Math.max(...live.map((m) => rateOf(m.rate))) : null;
   const live22 = ms.filter((m) => m.rate && m.rate.buy22);
   const best22 = live22.length ? Math.min(...live22.map((m) => m.rate.buy22)) : null;
-  const high24 = live.length ? Math.max(...live.map((m) => m.rate.buy24)) : null;
 
-  paintHeads(live, best24, best22, high24, ms);
+  paintHeads(live, best, best22, high, ms);
 
   // Merchants with no numbers sink to the bottom, so the rates you came for are
   // the first thing on screen. Within each group the merchants.json order holds
@@ -141,11 +168,13 @@ function paint() {
   $("board").innerHTML = "";
   if (!ordered.length) {
     $("board").innerHTML =
-      '<div class="board-empty">No jewellers picked.' +
+      '<div class="board-empty">' + (isSilver()
+        ? "None of the picked jewellers publishes a silver rate."
+        : "No jewellers picked.") +
       '<div><button class="btn btn-tonal btn-sm" id="emptyAll">Show them all</button></div></div>';
     $("emptyAll").onclick = () => setHidden([]);
   }
-  ordered.forEach((m) => $("board").appendChild(card(m, best24)));
+  ordered.forEach((m) => $("board").appendChild(card(m, best)));
 
   const busy = STATE.refreshing;
   $("status").querySelector(".dot").className = "dot" + (busy ? " busy" : "");
@@ -161,17 +190,21 @@ function paint() {
   $("refreshBtn").hidden = STATIC;
 }
 
-function paintHeads(live, best24, best22, high24, ms) {
-  const cheapest = live.find((m) => m.rate.buy24 === best24);
-  const spread = (best24 != null && high24 != null) ? high24 - best24 : null;
-  const heads = [
-    { k: "Cheapest 24K", v: money(best24), w: cheapest ? cheapest.name : "no rate yet" },
+function paintHeads(live, best, best22, high, ms) {
+  const cheapest = live.find((m) => rateOf(m.rate) === best);
+  const spread = (best != null && high != null) ? high - best : null;
+  const dearest = live.find((m) => rateOf(m.rate) === high);
+  const heads = isSilver() ? [
+    { k: "Cheapest silver", v: money(best), w: cheapest ? cheapest.name : "no rate yet" },
+    { k: "Dearest silver", v: money(high), w: dearest ? dearest.name : "no rate yet" },
+  ] : [
+    { k: "Cheapest 24K", v: money(best), w: cheapest ? cheapest.name : "no rate yet" },
     { k: "Cheapest 22K", v: money(best22),
       w: (() => { const c = ms.find((m) => m.rate && m.rate.buy22 === best22);
                   return c ? c.name : "no rate yet"; })() },
-    { k: "Spread across the board", v: spread == null ? null : money(spread),
-      w: live.length + " of " + ms.length + " merchants reporting" },
   ];
+  heads.push({ k: "Spread across the board", v: spread == null ? null : money(spread),
+               w: live.length + " of " + ms.length + " merchants reporting" });
   $("heads").innerHTML = heads.map((h) => `
     <div class="head">
       <span class="k">${h.k}</span>
@@ -391,9 +424,9 @@ function card(m, best24) {
   const el = document.createElement("article");
   el.className = "card";
   if (m.note) el.title = m.note;
-  const isBest = r.buy24 && r.buy24 === best24;
+  const isBest = rateOf(r) && rateOf(r) === best24;
   if (isBest) el.classList.add("best");
-  if (!r.buy24 && !r.buy22) el.classList.add("dim");
+  if (!rateOf(r) && !(isSilver() ? false : r.buy22)) el.classList.add("dim");
 
   let state = "off", why = "no automatic source";
   if (r.ok && r.manual) { state = "ok"; why = "keyed in by hand"; }
@@ -412,7 +445,7 @@ function card(m, best24) {
   const cut = cutFor(m.id);
 
   el.innerHTML = `
-    ${isBest ? '<span class="badge">CHEAPEST 24K</span>' :
+    ${isBest ? `<span class="badge">CHEAPEST ${isSilver() ? "SILVER" : "24K"}</span>` :
       r.manual ? '<span class="badge manual">MANUAL</span>' : ""}
     <div class="who">
       <span class="mark">${mark(m)}</span>
@@ -420,17 +453,17 @@ function card(m, best24) {
       <span class="state ${state}" title="${esc(why)}"></span>
     </div>
 
-    <div class="rates">
-      <div class="rate k24 ${cut && r.buy24 ? "buyback" : ""}">${k24Face(r, cut)}</div>
-      <div class="rate">
+    <div class="rates${isSilver() ? " one" : ""}">
+      <div class="rate k24 ${cut && rateOf(r) ? "buyback" : ""}">${k24Face(r, cut)}</div>
+      ${isSilver() ? "" : `<div class="rate">
         <span class="kt">22K ${r.derived22
           ? '<span class="drv" title="Derived: 24K x 22/24">DERIVED</span>' : ""}</span>
         ${r.buy22 ? `<div class="amt">${money(r.buy22)}</div>` : '<div class="none">—</div>'}
         <span class="per">${UNIT === 1 ? "per gram" : "per 10 g"}</span>
-      </div>
+      </div>`}
     </div>
 
-    ${r.buy24 ? `<div class="cut-row"><span class="cuts">
+    ${rateOf(r) ? `<div class="cut-row"><span class="cuts">
         <button data-cut="2" class="${cut === 2 ? "on" : ""}"
                 title="Flip the 24K tile to what they would pay you, 2% under">2% cut</button>
         <button data-cut="3" class="${cut === 3 ? "on" : ""}"
@@ -477,17 +510,21 @@ function card(m, best24) {
   return el;
 }
 
-/* The two faces of the 24K tile. */
+/* The two faces of the headline tile: the rate on show, or the buyback under
+   it. In silver there is one purity worth quoting - 999 fine - so the tile
+   carries that instead of 24K, and the buyback is reckoned on it. */
 function k24Face(r, cut) {
   const per = UNIT === 1 ? "per gram" : "per 10 g";
-  if (cut && r.buy24) {
+  const rate = rateOf(r);
+  const label = isSilver() ? "Silver 999" : "24K";
+  if (cut && rate) {
     return `<span class="kt">Buyback · ${cut}% cut</span>
-            <div class="amt">${money(r.buy24 * (1 - cut / 100))}</div>
+            <div class="amt">${money(rate * (1 - cut / 100))}</div>
             <span class="per">${per}</span>`;
   }
-  return `<span class="kt">24K ${r.derived24
+  return `<span class="kt">${label} ${(!isSilver() && r.derived24)
             ? '<span class="drv" title="Derived: 22K x 24/22">DERIVED</span>' : ""}</span>
-          ${r.buy24 ? `<div class="amt">${money(r.buy24)}</div>` : '<div class="none">—</div>'}
+          ${rate ? `<div class="amt">${money(rate)}</div>` : '<div class="none">—</div>'}
           <span class="per">${per}</span>`;
 }
 
@@ -497,7 +534,7 @@ function flipK24(el, r, cut) {
   tile.classList.add("flip");
   setTimeout(() => {
     tile.innerHTML = k24Face(r, cut);
-    tile.classList.toggle("buyback", !!cut && !!r.buy24);
+    tile.classList.toggle("buyback", !!cut && !!rateOf(r));
   }, 185);
   setTimeout(() => tile.classList.remove("flip"), 420);
 }

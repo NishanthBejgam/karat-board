@@ -372,16 +372,19 @@ def read_merchant(m, proxy_ok=True):
     else:
         raise RuntimeError("unknown adapter '%s'" % adapter)
 
+    # k24/k22 are the two gold purities; ag is silver, which most of these
+    # merchants publish in the very same response - so it costs no extra fetch,
+    # and a merchant that does not publish it simply has no "ag" recipe.
     out = {}
     for side in ("buy", "sell"):
-        for karat in ("k24", "k22"):
-            spec = (src.get(side) or {}).get(karat)
+        for key, suffix in (("k24", "24"), ("k22", "22"), ("ag", "Ag")):
+            spec = (src.get(side) or {}).get(key)
             if adapter == "pairs_json":
                 val = read_pairs(spec, body)
             else:
                 val = _pick(spec, body)
             if val:
-                out[side + karat[1:]] = round(val, 2)
+                out[side + suffix] = round(val, 2)
 
     return finish(src, out, body)
 
@@ -500,15 +503,15 @@ def read_socketio(src):
 
     out = {}
     for side in ("buy", "sell"):
-        for karat in ("k24", "k22"):
-            spec = (src.get(side) or {}).get(karat)
+        for key, suffix in (("k24", "24"), ("k22", "22"), ("ag", "Ag")):
+            spec = (src.get(side) or {}).get(key)
             if not spec:
                 continue
             ask = asks.get(str(spec.get("symbol") or "").lower())
             if ask is None:
                 continue
             add = premium.get(spec.get("premiumName"), 0) if spec.get("premiumName") else 0
-            out[side + karat[1:]] = round((ask + add) / float(spec.get("divide") or 1), 2)
+            out[side + suffix] = round((ask + add) / float(spec.get("divide") or 1), 2)
     return out
 
 

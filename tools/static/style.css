@@ -207,3 +207,72 @@ html[data-theme="dark"] .topbar { box-shadow: 0 6px 20px -14px #000; }
   display: flex; align-items: center; gap: 10px; opacity: 0; transition: opacity .2s, transform .2s;
 }
 .snackbar.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* =========================================================================
+   Silver.
+
+   The board is built in gold because that is what it mostly reports. Switch
+   the metal and the whole room should change with it - not a badge saying
+   "silver" over a gold page. So every token the gold palette defines is
+   redefined here in steel: cool greys where the ivory was, slate ink where the
+   espresso was, and a brushed-metal gradient where the foil was.
+
+   Order matters. These sit AFTER the dark block, and the dark+silver pairing
+   sits after both, so each of the four combinations lands on the right palette.
+   ========================================================================= */
+html[data-metal="silver"] {
+  --m3-primary:        #4c6072;   /* steel - AA on the cool ground at 12px bold */
+  --m3-primary-soft:   #8fa6b8;
+  --m3-on-primary:     #ffffff;
+  --m3-primary-container:#dde7ef;
+  --m3-surface:        #f4f7fa;   /* cool paper */
+  --m3-surface-1:      #ffffff;
+  --m3-surface-2:      #eaeff4;
+  --m3-surface-3:      #dfe6ec;
+  --m3-surface-variant:#d3dce4;
+  --m3-on-surface:     #16202a;   /* slate ink */
+  --m3-on-surface-var: #4e5a66;
+  --m3-outline:        #78868f;
+  --m3-outline-var:    #dbe3ea;
+  --m3-error:          #b3261e;
+  --m3-warn:           #8a6410;
+  --m3-ok:             #0b7350;
+  --m3-up:             #b3401e;
+  --gold:              #93a9bb;   /* the accent tint - silver's answer to it */
+  --m3-scrim:          rgba(22,32,42,.46);
+  --brand-grad:        linear-gradient(140deg, #e8f0f6 0%, #9fb6c8 48%, #566b7e 100%);
+  --foil-grad:         linear-gradient(100deg, #566b7e 0%, #9fb6c8 38%, #f0f6fa 52%, #9fb6c8 66%, #566b7e 100%);
+  --brand-glow:        rgba(96,127,152,.40);
+  --bg-grad:           radial-gradient(1100px 560px at 86% -12%, #e4eef6 0%, #f4f7fa 58%);
+  --shadow-1: 0 1px 2px rgba(20,35,50,.10), 0 1px 3px rgba(20,35,50,.06);
+  --shadow-2: 0 2px 6px rgba(20,35,50,.10), 0 8px 20px rgba(20,35,50,.10);
+  --shadow-3: 0 12px 34px rgba(20,35,50,.18);
+}
+html[data-metal="silver"][data-theme="dark"] {
+  --m3-primary:        #b9ccdd;
+  --m3-primary-soft:   #8ba4b8;
+  --m3-on-primary:     #12222f;
+  --m3-primary-container:#2b3c4a;
+  --m3-surface:        #0d1319;   /* cold vault dark */
+  --m3-surface-1:      #151d25;
+  --m3-surface-2:      #1d2831;
+  --m3-surface-3:      #26333e;
+  --m3-surface-variant:#2c3a45;
+  --m3-on-surface:     #e8eef4;
+  --m3-on-surface-var: #a9b8c4;
+  --m3-outline:        #8fa0ad;
+  --m3-outline-var:    #25313b;
+  --m3-error:          #ff8a7a;
+  --m3-warn:           #f0b64d;
+  --m3-ok:             #48d69c;
+  --m3-up:             #ff9166;
+  --gold:              #b9ccdd;
+  --m3-scrim:          rgba(0,0,0,.64);
+  --brand-grad:        linear-gradient(140deg, #dfeaf3 0%, #90a9bd 48%, #4a6070 100%);
+  --foil-grad:         linear-gradient(100deg, #4a6070 0%, #90a9bd 38%, #e6f0f7 52%, #90a9bd 66%, #4a6070 100%);
+  --brand-glow:        rgba(145,175,200,.38);
+  --bg-grad:           radial-gradient(1100px 560px at 86% -12%, #17242e 0%, #0d1319 60%);
+  --shadow-1: 0 1px 2px rgba(0,0,0,.45);
+  --shadow-2: 0 4px 14px rgba(0,0,0,.55);
+  --shadow-3: 0 10px 30px rgba(0,0,0,.6);
+}

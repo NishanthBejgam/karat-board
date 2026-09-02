@@ -30,7 +30,7 @@ STATIC = os.path.join(HERE, "static")
 # The YourCardJourney logo is deliberately absent: the site repo ignores *.png,
 # the live site already 404s it, and it is 1.4 MB. The credit line is text and a
 # link instead, which is what the published page actually shows.
-ASSETS = ("index.html", "app.js", "style.css", "favicon.svg")
+ASSETS = ("index.html", "app.js", "style.css", "favicon.svg", "favicon-silver.svg")
 
 
 def build(out_dir):

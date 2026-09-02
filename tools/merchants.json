@@ -90,6 +90,10 @@
           "k22": {
             "pattern": "\"gold_22kt\"[^}]*?\"price\":\\s*([\\d.]+)",
             "divide": 1
+          },
+          "ag": {
+            "pattern": "\"metal_type\":\"Silver\",\"price\":([\\d.]+)",
+            "divide": 1
           }
         }
       }
@@ -158,6 +162,10 @@
           "k22": {
             "pattern": "\"purity\":\"22KT\",\"sale_rate\":([\\d.]+)",
             "divide": 1
+          },
+          "ag": {
+            "pattern": "\"purity\":\"SL99\\.99\",\"sale_rate\":([\\d.]+)",
+            "divide": 1
           }
         }
       }
@@ -202,6 +210,11 @@
             "symbol": "gold",
             "premiumName": "FINE GOLD 999",
             "divide": 10
+          },
+          "ag": {
+            "symbol": "silver999",
+            "premiumName": "FINE SILVER 999",
+            "divide": 1000
           }
         }
       }
@@ -251,6 +264,10 @@
           },
           "k22": {
             "pattern": "22K Gold\\s*₹\\s*([\\d,]+)",
+            "divide": 1
+          },
+          "ag": {
+            "pattern": "Silver\\s*₹\\s*([\\d,.]+)",
             "divide": 1
           }
         }
@@ -321,6 +338,10 @@
           "k22": {
             "pattern": "GOLD RATE 22k\\s*\\(1gm\\)\\s*-\\s*₹\\s*([\\d,]+)",
             "divide": 1
+          },
+          "ag": {
+            "pattern": "SILVER RATE\\s*\\(1gm\\)\\s*-\\s*₹\\s*([\\d,.]+)",
+            "divide": 1
           }
         }
       }
@@ -344,6 +365,10 @@
           },
           "k22": {
             "pattern": "Online Gold Rate 22 KT \\(916\\)\",\"rate\":\"₹([\\d,\\.]+)/g",
+            "divide": 1
+          },
+          "ag": {
+            "pattern": "Online Silver Rate\",\"rate\":\"₹([\\d,.]+)/g",
             "divide": 1
           }
         },
