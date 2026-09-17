@@ -135,18 +135,25 @@ def compose(deals, pct, built, rates):
         tripped = {d["karat"] for d in items}
         for d in items:
             key = "buy22" if d["karat"] == "22K" else "buy24"
-            out += ["", "*%s %s*   ₹%s / g" % (short, d["karat"], _rs(d["price"]))]
+            # Telegram's normal font is proportional, so names of different
+            # lengths never line up. A code block is monospace: pad there.
+            rows = [(short, d["price"], None)]
             for bid in BASELINES:
                 ref = base_rates[bid].get(key)
-                if not ref:
-                    continue
-                diff = ref - d["price"]
-                gap = (d["price"] - ref) / ref * 100.0
-                out.append("%s %s   ₹%s / g   (%s cheaper by ₹%s · %+.2f%%)" % (
-                    base_names[bid], d["karat"], _rs(ref), short, _rs(diff), gap))
-            out += ["", "What that saves you (vs %s)" % d["refName"]]
+                if ref:
+                    rows.append((base_names[bid], ref, ref - d["price"]))
+            width = max(len(name) for name, _, _ in rows)
+            out += ["", "*%s %s*" % (short, d["karat"]), "```"]
+            for name, price, diff in rows:
+                line = "%-*s  ₹%s / g" % (width, name, _rs(price))
+                if diff is not None:
+                    line += "   %s cheaper by ₹%s (%+.2f%%)" % (
+                        short, _rs(diff), -diff / price * 100.0)
+                out.append(line)
+            out += ["```", "What that saves you (vs %s)" % d["refName"], "```"]
             for grams in (2, 5, 10):
-                out.append("  %2d g   ₹%s" % (grams, _rs((d["ref"] - d["price"]) * grams)))
+                out.append("%2d g   ₹%s" % (grams, _rs((d["ref"] - d["price"]) * grams)))
+            out.append("```")
 
         # The purity that did NOT trip, so a one-purity glitch is obvious.
         for key, karat in (("buy22", "22K"), ("buy24", "24K")):
