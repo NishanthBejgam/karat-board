@@ -160,7 +160,8 @@ def compose(deals, pct, built, rates):
                             karat, _rs(r[key]), gap, base_names[BASELINES[0]],
                             " and ".join(sorted(tripped)))]
 
-    out += ["", "Read live at %s IST." % _when(built)]
+    out += ["", "Read live at %s IST." % _when(built),
+            "", "_Note: your purse is full - why not ride on a Gold Deal?_"]
     return "\n".join(out)
 
 
