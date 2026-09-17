@@ -1,25 +1,26 @@
-"""Spread alert - tell a few people, privately, when a jeweller undercuts Kalyan.
+"""Spread alert - tell a few people, privately, when a jeweller undercuts Kalyan
+or Lalithaa by a wide margin.
 
 The board already reads every merchant twice an hour and leaves the numbers in
 rates.json. This reads *that file* - no merchant is asked anything a second
-time - and compares each jeweller's 22K and 24K against Kalyan's. When one is
-cheaper by more than KB_ALERT_PCT, a Telegram message goes to the chat ids in
-KB_TG_CHATS. Nobody else sees it: the public page is untouched.
+time - and compares each jeweller's 22K and 24K against Kalyan's and
+Lalithaa's. When one is cheaper than EITHER by KB_ALERT_PCT or more, a
+Telegram message goes to the chat ids in KB_TG_CHATS. Nobody else sees it: the public page is untouched.
 
     python alert.py <dir-with-rates.json>
 
 Environment (all optional; with no token this is a no-op that still prints):
   KB_TG_TOKEN          bot token from @BotFather
   KB_TG_CHATS          comma-separated chat ids to notify (one per person/group)
-  KB_ALERT_PCT         threshold, percent below Kalyan       (default 1.0)
+  KB_ALERT_PCT         threshold, percent below the baseline (default 8.0)
   KB_ALERT_REPEAT_H    re-send the same alert after N hours  (default 6)
   KB_ALERT_STATE_URL   where the previous build's alerts.json lives
 
 Why "cheaper" only: MMTC-PAMP, BRPL and Aspect always sit 2-10% above Kalyan by
 construction (minted product, ex-GST wholesale, spot plus premium). Dearer is
-not a deal and would fire on every build. A jeweller *below* the Kalyan board
-by a whole percent, when the rest cluster inside half a percent, is the thing
-worth a trip - or a typo on their side that is worth catching.
+not a deal and would fire on every build. The rule the user set: a jeweller
+8% or more *below* Kalyan or Lalithaa - the Bhima 22K incident of 2026-09-17,
+where the storefront printed a rate some ₹1,300 under the board.
 
 Why a state file: the build runs twice an hour and Bhima's gap does not close
 in thirty minutes. alerts.json remembers what was last sent, so the same gap
@@ -37,7 +38,7 @@ import time
 import urllib.parse
 import urllib.request
 
-BASELINE = "kalyan"
+BASELINES = ("kalyan", "lalithaa")
 
 
 def load_json(path_or_url):
@@ -55,15 +56,24 @@ def load_json(path_or_url):
 
 
 def find_deals(state, pct):
-    """Every (merchant, karat, their price, Kalyan price, %) under the line."""
+    """Every (merchant, karat, their price, baseline price, %) under the line.
+
+    A merchant is checked against each baseline separately and reported once,
+    against whichever it undercuts by more.
+    """
     by_id = {m["id"]: m for m in state.get("merchants", [])}
-    base = (by_id.get(BASELINE) or {}).get("rate") or {}
-    if not base.get("buy24"):
-        print("alert: Kalyan has no rate this build - nothing to compare")
+    bases = []
+    for bid in BASELINES:
+        b = by_id.get(bid) or {}
+        r = b.get("rate") or {}
+        if r.get("buy24"):
+            bases.append((b.get("short") or bid, r))
+    if not bases:
+        print("alert: no baseline (Kalyan/Lalithaa) rate this build - nothing to compare")
         return []
     deals = []
     for m in state.get("merchants", []):
-        if m["id"] == BASELINE:
+        if m["id"] in BASELINES:
             continue
         r = m.get("rate") or {}
         # A stale tile is last build's number, not today's offer: the gap it
@@ -71,14 +81,23 @@ def find_deals(state, pct):
         if not r.get("ok") or r.get("stale"):
             continue
         for key, karat in (("buy22", "22K"), ("buy24", "24K")):
-            mine, ref = r.get(key), base.get(key)
-            if not mine or not ref:
+            mine = r.get(key)
+            if not mine:
                 continue
-            gap = (mine - ref) / ref * 100.0
-            if gap <= -pct:
+            worst = None
+            for bname, base in bases:
+                ref = base.get(key)
+                if not ref:
+                    continue
+                gap = (mine - ref) / ref * 100.0
+                if gap <= -pct and (worst is None or gap < worst[0]):
+                    worst = (gap, bname, ref)
+            if worst:
+                gap, bname, ref = worst
                 deals.append({"id": m["id"], "name": m.get("short") or m["name"],
                               "karat": karat, "price": mine, "ref": ref,
-                              "pct": round(gap, 2), "site": m.get("site")})
+                              "refName": bname, "pct": round(gap, 2),
+                              "site": m.get("site")})
     deals.sort(key=lambda d: d["pct"])
     return deals
 
@@ -91,10 +110,11 @@ def fingerprint(deals):
 
 def compose(deals, pct, built):
     lines = ["\U0001FA99 *Karat Board - spread alert*",
-             "Below Kalyan by ≥ %g%%:" % pct, ""]
+             "Below Kalyan / Lalithaa by ≥ %g%%:" % pct, ""]
     for d in deals:
-        lines.append("*%s %s*  ₹%s  (Kalyan ₹%s)  *%+.2f%%*" % (
-            d["name"], d["karat"], _rs(d["price"]), _rs(d["ref"]), d["pct"]))
+        lines.append("*%s %s*  ₹%s  (%s ₹%s)  *%+.2f%%*" % (
+            d["name"], d["karat"], _rs(d["price"]), d["refName"], _rs(d["ref"]),
+            d["pct"]))
         if d.get("site"):
             lines.append("  " + d["site"])
     lines += ["", "Read at %s" % built.replace("T", " ")[:16],
@@ -127,13 +147,13 @@ def run(out_dir):
     rates = load_json(os.path.join(out_dir, "rates.json"))
     if not rates:
         return 0
-    pct = float(os.environ.get("KB_ALERT_PCT") or 1.0)
+    pct = float(os.environ.get("KB_ALERT_PCT") or 8.0)
     repeat_h = float(os.environ.get("KB_ALERT_REPEAT_H") or 6)
     deals = find_deals(rates, pct)
-    print("alert: %d reading(s) at least %g%% under Kalyan" % (len(deals), pct))
+    print("alert: %d reading(s) at least %g%% under Kalyan/Lalithaa" % (len(deals), pct))
     for d in deals:
-        print("  %-10s %s  %s vs %s  %+.2f%%" % (
-            d["id"], d["karat"], _rs(d["price"]), _rs(d["ref"]), d["pct"]))
+        print("  %-10s %s  %s vs %s %s  %+.2f%%" % (
+            d["id"], d["karat"], _rs(d["price"]), d["refName"], _rs(d["ref"]), d["pct"]))
 
     prev = load_json(os.environ.get("KB_ALERT_STATE_URL") or
                      os.path.join(out_dir, "alerts.json")) or {}

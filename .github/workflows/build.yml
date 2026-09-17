@@ -72,11 +72,11 @@ jobs:
           KB_PROXY_KEY: ${{ secrets.SCRAPING_KEY }}
           # Spread alert (tools/alert.py). Private: only the chat ids in the
           # secret hear about it. Fires when a jeweller's 22K or 24K reads
-          # KB_ALERT_PCT percent or more UNDER Kalyan; repeats the same gap
+          # KB_ALERT_PCT percent or more UNDER Kalyan or Lalithaa; repeats the same gap
           # every KB_ALERT_REPEAT_H hours. Without the secrets it only prints.
           KB_TG_TOKEN: ${{ secrets.KB_TG_TOKEN }}
           KB_TG_CHATS: ${{ secrets.KB_TG_CHATS }}
-          KB_ALERT_PCT: "1.0"
+          KB_ALERT_PCT: "8.0"
           KB_ALERT_REPEAT_H: "6"
           KB_ALERT_STATE_URL: https://karatboard.yourcardjourney.store/alerts.json
         run: python tools/build_site.py _site
