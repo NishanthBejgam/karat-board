@@ -109,24 +109,25 @@ def fingerprint(deals):
 
 
 def compose(deals, pct, built, rates):
-    """The message a person reads on their phone. No links: the point is to
-    understand the deal in one glance, not to click through."""
+    """The message a person reads on their phone.
+
+    Designed for a phone screen, which is about 35 characters wide: one fact
+    per line, nothing that has to line up, no tables, no links. Telegram HTML
+    (not Markdown) so a name with an underscore cannot break the formatting.
+    """
     by_id = {m["id"]: m for m in rates.get("merchants", [])}
     base_rates = {bid: (by_id.get(bid) or {}).get("rate") or {} for bid in BASELINES}
     base_names = {bid: (by_id.get(bid) or {}).get("short") or bid for bid in BASELINES}
 
-    # One block per merchant, however many purities tripped.
     by_merchant = {}
     for d in deals:
         by_merchant.setdefault(d["id"], []).append(d)
-    n = len(by_merchant)
 
-    out = ["🪙 *KARAT BOARD - GOLD DEAL ALERT*", ""]
-    if n == 1:
-        out.append("*%s* is selling gold well below the market." %
-                   (by_id.get(next(iter(by_merchant))) or {}).get("name", "A jeweller"))
-    else:
-        out.append("*%d jewellers* are selling gold well below the market." % n)
+    out = ["🪙 <b>GOLD DEAL ALERT</b>", ""]
+    # Headline: the single biggest gap, in one sentence.
+    top = deals[0]
+    out.append("<b>%s %s is %.1f%% cheaper than %s</b>" % (
+        top["name"], top["karat"], -top["pct"], top["refName"]))
 
     for mid, items in by_merchant.items():
         m = by_id.get(mid) or {}
@@ -135,25 +136,17 @@ def compose(deals, pct, built, rates):
         tripped = {d["karat"] for d in items}
         for d in items:
             key = "buy22" if d["karat"] == "22K" else "buy24"
-            # Telegram's normal font is proportional, so names of different
-            # lengths never line up. A code block is monospace: pad there.
-            rows = [(short, d["price"], None)]
+            out += ["", "💰 <b>%s %s - ₹%s/g</b>" % (
+                short, d["karat"], _rs(d["price"]))]
+            out.append("Compared with")
             for bid in BASELINES:
                 ref = base_rates[bid].get(key)
                 if ref:
-                    rows.append((base_names[bid], ref, ref - d["price"]))
-            width = max(len(name) for name, _, _ in rows)
-            out += ["", "*%s %s*" % (short, d["karat"]), "```"]
-            for name, price, diff in rows:
-                line = "%-*s  ₹%s / g" % (width, name, _rs(price))
-                if diff is not None:
-                    line += "   %s cheaper by ₹%s (%+.2f%%)" % (
-                        short, _rs(diff), -diff / price * 100.0)
-                out.append(line)
-            out += ["```", "What that saves you (vs %s)" % d["refName"], "```"]
+                    out.append("• %s ₹%s/g → save ₹%s/g" % (
+                        base_names[bid], _rs(ref), _rs(ref - d["price"])))
+            out += ["", "You save (vs %s)" % d["refName"]]
             for grams in (2, 5, 10):
-                out.append("%2d g   ₹%s" % (grams, _rs((d["ref"] - d["price"]) * grams)))
-            out.append("```")
+                out.append("• %d g → <b>₹%s</b>" % (grams, _rs((d["ref"] - d["price"]) * grams)))
 
         # The purity that did NOT trip, so a one-purity glitch is obvious.
         for key, karat in (("buy22", "22K"), ("buy24", "24K")):
@@ -162,13 +155,13 @@ def compose(deals, pct, built, rates):
             ref = base_rates[BASELINES[0]].get(key)
             if ref:
                 gap = (r[key] - ref) / ref * 100.0
-                out += ["", "Their %s is ₹%s / g - that one is normal (%+.2f%% vs %s), "
-                        "so the gap is only on %s." % (
+                out += ["", "ℹ️ Their %s is normal at ₹%s/g (%+.2f%% vs %s). "
+                        "The gap is only on %s." % (
                             karat, _rs(r[key]), gap, base_names[BASELINES[0]],
                             " and ".join(sorted(tripped)))]
 
-    out += ["", "Read live at %s IST." % _when(built),
-            "", "_Note: your purse is full - why not ride on a Gold Deal?_"]
+    out += ["", "🕑 Read live %s IST" % _when(built),
+            "", "<i>Note: your purse is full - why not ride on a Gold Deal?</i>"]
     return "\n".join(out)
 
 
@@ -176,7 +169,7 @@ def _when(iso):
     # 2026-09-18T00:58:12+05:30 -> 18 Sep 2026, 00:58
     try:
         t = time.strptime(iso[:16], "%Y-%m-%dT%H:%M")
-        return time.strftime("%d %b %Y, %H:%M", t)
+        return time.strftime("%d %b, %H:%M", t)
     except Exception:
         return iso[:16].replace("T", " ")
 
@@ -189,7 +182,7 @@ def telegram(token, chats, text):
     sent = 0
     for chat in chats:
         body = urllib.parse.urlencode({
-            "chat_id": chat, "text": text, "parse_mode": "Markdown",
+            "chat_id": chat, "text": text, "parse_mode": "HTML",
             "disable_web_page_preview": "true"}).encode("utf-8")
         req = urllib.request.Request(
             "https://api.telegram.org/bot%s/sendMessage" % token, data=body)
