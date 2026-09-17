@@ -68,6 +68,11 @@ def build(out_dir):
         print("sweep failed - not publishing an empty board")
         return code
 
+    # Spread alert. Reads the rates.json just written - no merchant is asked
+    # twice - and pings a few Telegram chats if a jeweller undercuts Kalyan.
+    # Private to whoever is in KB_TG_CHATS; the page itself never changes.
+    subprocess.call([sys.executable, os.path.join(HERE, "alert.py"), out_dir])
+
     print("site ready in", out_dir)
     return 0
 
