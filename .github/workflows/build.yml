@@ -29,6 +29,11 @@ on:
     - cron: "17 * * * *"
     - cron: "47 * * * *"
   workflow_dispatch:
+    inputs:
+      alert_pct:
+        description: "Spread-alert threshold for THIS run only (test the Telegram pipe with e.g. 0.4)"
+        required: false
+        default: "8.0"
   push:
     branches: [main]
 
@@ -76,7 +81,7 @@ jobs:
           # every KB_ALERT_REPEAT_H hours. Without the secrets it only prints.
           KB_TG_TOKEN: ${{ secrets.KB_TG_TOKEN }}
           KB_TG_CHATS: ${{ secrets.KB_TG_CHATS }}
-          KB_ALERT_PCT: "8.0"
+          KB_ALERT_PCT: ${{ github.event.inputs.alert_pct || '8.0' }}
           KB_ALERT_REPEAT_H: "6"
           KB_ALERT_STATE_URL: https://karatboard.yourcardjourney.store/alerts.json
         run: python tools/build_site.py _site
