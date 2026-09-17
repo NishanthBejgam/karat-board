@@ -108,18 +108,75 @@ def fingerprint(deals):
                     for d in deals)
 
 
-def compose(deals, pct, built):
-    lines = ["\U0001FA99 *Karat Board - spread alert*",
-             "Below Kalyan / Lalithaa by ≥ %g%%:" % pct, ""]
+def compose(deals, pct, built, rates):
+    """The message a person reads on their phone. No links: the point is to
+    understand the deal in one glance, not to click through."""
+    by_id = {m["id"]: m for m in rates.get("merchants", [])}
+    base_rates = {bid: (by_id.get(bid) or {}).get("rate") or {} for bid in BASELINES}
+    base_names = {bid: (by_id.get(bid) or {}).get("short") or bid for bid in BASELINES}
+
+    # One block per merchant, however many purities tripped.
+    by_merchant = {}
     for d in deals:
-        lines.append("*%s %s*  ₹%s  (%s ₹%s)  *%+.2f%%*" % (
-            d["name"], d["karat"], _rs(d["price"]), d["refName"], _rs(d["ref"]),
-            d["pct"]))
-        if d.get("site"):
-            lines.append("  " + d["site"])
-    lines += ["", "Read at %s" % built.replace("T", " ")[:16],
-              "https://karatboard.yourcardjourney.store"]
-    return "\n".join(lines)
+        by_merchant.setdefault(d["id"], []).append(d)
+    n = len(by_merchant)
+
+    out = ["🪙 *KARAT BOARD - GOLD DEAL ALERT*", ""]
+    if n == 1:
+        out.append("*%s* is selling gold well below the market." %
+                   (by_id.get(next(iter(by_merchant))) or {}).get("name", "A jeweller"))
+    else:
+        out.append("*%d jewellers* are selling gold well below the market." % n)
+
+    for mid, items in by_merchant.items():
+        m = by_id.get(mid) or {}
+        r = m.get("rate") or {}
+        short = m.get("short") or mid
+        tripped = {d["karat"] for d in items}
+        for d in items:
+            key = "buy22" if d["karat"] == "22K" else "buy24"
+            out += ["", "*%s %s*   ₹%s / g" % (short, d["karat"], _rs(d["price"]))]
+            for bid in BASELINES:
+                ref = base_rates[bid].get(key)
+                if not ref:
+                    continue
+                diff = ref - d["price"]
+                gap = (d["price"] - ref) / ref * 100.0
+                out.append("%s %s   ₹%s / g   (%s cheaper by ₹%s · %+.2f%%)" % (
+                    base_names[bid], d["karat"], _rs(ref), short, _rs(diff), gap))
+            out += ["", "What that saves you (vs %s)" % d["refName"]]
+            for grams in (2, 5, 10):
+                out.append("  %2d g   ₹%s" % (grams, _rs((d["ref"] - d["price"]) * grams)))
+
+        # The purity that did NOT trip, so a one-purity glitch is obvious.
+        for key, karat in (("buy22", "22K"), ("buy24", "24K")):
+            if karat in tripped or not r.get(key):
+                continue
+            ref = base_rates[BASELINES[0]].get(key)
+            if ref:
+                gap = (r[key] - ref) / ref * 100.0
+                out += ["", "Their %s is ₹%s / g - that one is normal (%+.2f%% vs %s), "
+                        "so the gap is only on %s." % (
+                            karat, _rs(r[key]), gap, base_names[BASELINES[0]],
+                            " and ".join(sorted(tripped)))]
+
+    out += ["",
+            "Read live at %s IST." % _when(built),
+            "A jeweller this far under is either a genuine offer or a mistake "
+            "on their site - worth checking before it is corrected.",
+            "",
+            "You will not be pinged again for this same gap for %s hours, "
+            "unless it changes." % os.environ.get("KB_ALERT_REPEAT_H", "6")]
+    return "\n".join(out)
+
+
+def _when(iso):
+    # 2026-09-18T00:58:12+05:30 -> 18 Sep 2026, 00:58
+    try:
+        t = time.strptime(iso[:16], "%Y-%m-%dT%H:%M")
+        return time.strftime("%d %b %Y, %H:%M", t)
+    except Exception:
+        return iso[:16].replace("T", " ")
 
 
 def _rs(v):
@@ -171,7 +228,7 @@ def run(out_dir):
             token = os.environ.get("KB_TG_TOKEN", "").strip()
             chats = [c.strip() for c in os.environ.get("KB_TG_CHATS", "").split(",")
                      if c.strip()]
-            text = compose(deals, pct, rates.get("builtAt") or "")
+            text = compose(deals, pct, rates.get("builtAt") or "", rates)
             if token and chats:
                 n = telegram(token, chats, text)
                 print("alert: sent to %d of %d chat(s)" % (n, len(chats)))
