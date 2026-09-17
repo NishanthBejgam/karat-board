@@ -160,13 +160,7 @@ def compose(deals, pct, built, rates):
                             karat, _rs(r[key]), gap, base_names[BASELINES[0]],
                             " and ".join(sorted(tripped)))]
 
-    out += ["",
-            "Read live at %s IST." % _when(built),
-            "A jeweller this far under is either a genuine offer or a mistake "
-            "on their site - worth checking before it is corrected.",
-            "",
-            "You will not be pinged again for this same gap for %s hours, "
-            "unless it changes." % os.environ.get("KB_ALERT_REPEAT_H", "6")]
+    out += ["", "Read live at %s IST." % _when(built)]
     return "\n".join(out)
 
 
