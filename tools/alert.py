@@ -39,6 +39,8 @@ import urllib.parse
 import urllib.request
 
 BASELINES = ("kalyan", "lalithaa")
+COUPON_URL = ("https://raw.githubusercontent.com/NishanthBejgam/coupon-watch/"
+              "main/signal/coupon.json")
 
 
 def load_json(path_or_url):
@@ -195,6 +197,59 @@ def telegram(token, chats, text):
     return sent
 
 
+def _chats():
+    return (os.environ.get("KB_TG_TOKEN", "").strip(),
+            [c.strip() for c in os.environ.get("KB_TG_CHATS", "").split(",") if c.strip()])
+
+
+def compose_coupon(c):
+    """Phone-first like the spread alert, but this one carries the link:
+    the reward has to be collected on Amazon before the order is placed."""
+    if c.get("percent"):
+        offer = "%g%% back" % c["percent"]
+        if c.get("max"):
+            offer += ", up to ₹%s" % _rs(c["max"])
+    else:
+        offer = "Flat ₹%s back" % _rs(c.get("flat") or 0)
+    out = ["💍 <b>AMAZON JEWELLERY COUPON IS LIVE</b>", "",
+           "<b>%s</b>" % offer]
+    if c.get("min"):
+        out.append("• On orders of ₹%s or more" % _rs(c["min"]))
+    if c.get("endsAt"):
+        out.append("• Valid till %s" % time.strftime("%d %b", time.localtime(c["endsAt"])))
+    out.append("• Collect it first - it applies at checkout, once per account")
+    out += ["", "👉 Collect: %s" % c.get("url", ""),
+            "", "<i>Confirmed on Amazon's reward page by coupon-watch.</i>"]
+    return "\n".join(out)
+
+
+def coupon_alert(prev, state):
+    """Send once when the jewellery coupon turns live; carries its memory in
+    state["coupon"] so the next build does not repeat it."""
+    url = os.environ.get("KB_COUPON_URL", COUPON_URL)
+    state["coupon"] = prev.get("coupon") or {}
+    if not url:
+        return
+    sig = load_json(url) or {}
+    if sig.get("status") != "live":
+        print("alert: jewellery coupon not live")
+        return
+    key = "%s:%s" % (sig.get("rewardId"), sig.get("endsAt"))
+    if state["coupon"].get("key") == key:
+        print("alert: jewellery coupon %s already announced" % sig.get("rewardId"))
+        return
+    token, chats = _chats()
+    text = compose_coupon(sig)
+    if token and chats:
+        n = telegram(token, chats, text)
+        print("alert: coupon sent to %d of %d chat(s)" % (n, len(chats)))
+        if n:
+            state["coupon"] = {"key": key, "sentAt": time.time()}
+    else:
+        print("alert: no KB_TG_TOKEN / KB_TG_CHATS - would have sent:")
+        print(text)
+
+
 def run(out_dir):
     rates = load_json(os.path.join(out_dir, "rates.json"))
     if not rates:
@@ -220,9 +275,7 @@ def run(out_dir):
         if same and not aged:
             print("alert: unchanged since last message - not repeating yet")
         else:
-            token = os.environ.get("KB_TG_TOKEN", "").strip()
-            chats = [c.strip() for c in os.environ.get("KB_TG_CHATS", "").split(",")
-                     if c.strip()]
+            token, chats = _chats()
             text = compose(deals, pct, rates.get("builtAt") or "", rates)
             if token and chats:
                 n = telegram(token, chats, text)
@@ -232,6 +285,11 @@ def run(out_dir):
             else:
                 print("alert: no KB_TG_TOKEN / KB_TG_CHATS - would have sent:")
                 print(text)
+
+    try:
+        coupon_alert(prev, state)
+    except Exception as exc:                       # never lose the spread state over it
+        print("alert: coupon check failed (%s)" % exc)
 
     with io.open(os.path.join(out_dir, "alerts.json"), "w", encoding="utf-8") as fh:
         json.dump(state, fh, indent=1)
