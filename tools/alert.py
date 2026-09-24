@@ -228,6 +228,16 @@ def coupon_alert(prev, state):
     state["coupon"] so the next build does not repeat it."""
     url = os.environ.get("KB_COUPON_URL", COUPON_URL)
     state["coupon"] = prev.get("coupon") or {}
+    if os.environ.get("KB_COUPON_TEST") == "1":
+        sample = {"status": "live", "flat": 1500, "min": 15000,
+                  "endsAt": time.time() + 7 * 86400, "rewardId": "jewellery",
+                  "url": "https://www.amazon.in/h/rewards/dp/amzn1.rewards.rewardAd.jewellery?rdpf=en"}
+        token, chats = _chats()
+        text = "🧪 <b>TEST - not a real coupon</b>\n\n" + compose_coupon(sample)
+        if token and chats:
+            print("alert: coupon TEST sent to %d of %d chat(s)" % (telegram(token, chats, text), len(chats)))
+        else:
+            print(text)
     if not url:
         return
     sig = load_json(url) or {}

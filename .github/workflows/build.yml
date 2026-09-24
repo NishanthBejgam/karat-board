@@ -34,6 +34,10 @@ on:
         description: "Spread-alert threshold for THIS run only (test the Telegram pipe with e.g. 0.4)"
         required: false
         default: "8.0"
+      coupon_test:
+        description: "Also send a sample jewellery-coupon alert marked TEST"
+        type: boolean
+        default: false
   push:
     branches: [main]
 
@@ -84,6 +88,7 @@ jobs:
           KB_ALERT_PCT: ${{ github.event.inputs.alert_pct || '8.0' }}
           KB_ALERT_REPEAT_H: "6"
           KB_ALERT_STATE_URL: https://karatboard.yourcardjourney.store/alerts.json
+          KB_COUPON_TEST: ${{ github.event.inputs.coupon_test == 'true' && '1' || '' }}
         run: python tools/build_site.py _site
 
       # The custom domain has to travel with the artifact.
