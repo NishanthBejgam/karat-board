@@ -44,6 +44,23 @@
                color: var(--m3-on-surface-var); }
     .head .v { font-size: 25px; font-weight: 800; font-family: var(--mono); letter-spacing: -1px; }
     .head .w { font-size: 12.5px; color: var(--m3-on-surface-var); }
+    /* The two market tiles: the reference the jewellers price off, not a
+       jeweller. A plain hairline instead of the foil, a faint gold wash. */
+    .head.mkt { background: color-mix(in srgb, var(--gold) 7%, var(--m3-surface-1)); }
+    .head.mkt::after { background: var(--m3-outline); }
+    .head.mkt .v { font-size: 22px; }
+    .heads.five { grid-template-columns: repeat(5, 1fr); }
+    @media (max-width: 1100px) {
+      .heads.five { grid-template-columns: repeat(6, 1fr); }
+      .heads.five .head { grid-column: span 2; }
+      .heads.five .head.mkt { grid-column: span 3; }
+    }
+    @media (max-width: 780px) {
+      .heads.five { grid-template-columns: 1fr 1fr; }
+      .heads.five .head { grid-column: span 2; }
+      .heads.five .head.mkt { grid-column: span 1; }
+      .heads.five .head.mkt .v { font-size: 19px; }
+    }
 
     /* ---- Controls row ---- */
     .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px;

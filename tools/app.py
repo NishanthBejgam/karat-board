@@ -613,8 +613,53 @@ def refresh_all(only=None):
                 save_board(board)
 
             time.sleep(0.4)   # be a polite visitor
+        if not only:
+            refresh_market(cfg.get("market"))
     finally:
         _refreshing.clear()
+
+
+def read_market(spec):
+    """Gold spot and 999 bullion off dP Gold's ticker - see merchants.json."""
+    raw = fetch(spec["url"], "urllib", timeout=25, proxy_ok=False, who="market")
+    rows = {}
+    for line in raw.decode("utf-8", "replace").splitlines():
+        cols = [c.strip() for c in line.split("\t")]
+        cols = cols[1:] if cols and not cols[0] else cols
+        if len(cols) >= 4:
+            rows[cols[1].upper()] = cols
+
+    def ask(prefix):
+        for name, cols in rows.items():
+            if name.startswith(prefix.upper()):
+                return to_number(cols[3])
+        return None
+
+    out = {"spot": ask(spec["spot"]), "bullion": ask(spec["bullion"]),
+           "usdinr": ask(spec.get("usdinr") or "USDINR")}
+    if not (out["spot"] or out["bullion"]):
+        raise RuntimeError("market feed read, but neither line was in it")
+    return out
+
+
+def refresh_market(spec):
+    if not spec or not spec.get("url"):
+        return
+    entry = {"fetched": now_iso(), "source": spec.get("source") or ""}
+    try:
+        entry.update(read_market(spec))
+        entry["ok"] = True
+    except Exception as exc:
+        print("  market    FAILED %s" % str(exc)[:300])
+        entry["ok"] = False
+    with _lock:
+        board = load_board()
+        prev = board.get("market") or {}
+        # same rule as a merchant: a failed read keeps the last good numbers
+        if not entry["ok"] and (prev.get("spot") or prev.get("bullion")):
+            entry = dict(prev, ok=False, stale=True)
+        board["market"] = entry
+        save_board(board)
 
 
 def refresher():
@@ -668,6 +713,7 @@ def board_state():
 
     return {
         "merchants": rows,
+        "market": board.get("market"),
         "lastRefresh": board.get("lastRefresh"),
         "refreshMinutes": cfg.get("refreshMinutes") or 60,
         "refreshing": _refreshing.is_set(),
@@ -839,6 +885,7 @@ def seed_board(sources):
     everything that is not blocked). Per merchant, the later read wins.
     """
     best = {}
+    market = None
     for kind, ref in sources:
         if not ref:
             continue
@@ -849,6 +896,10 @@ def seed_board(sources):
             continue
         if not data:
             continue
+        mk = data.get("market") or {}
+        if (mk.get("spot") or mk.get("bullion")) and \
+                (mk.get("fetched") or "") > ((market or {}).get("fetched") or ""):
+            market = mk
         for m in data.get("merchants", []):
             rate = m.get("rate") or {}
             if not (rate.get("buy24") or rate.get("buy22")):
@@ -864,6 +915,8 @@ def seed_board(sources):
     if board["rates"]:
         return
     board["rates"] = best
+    if market:
+        board["market"] = market
     save_board(board)
     print("seed: carried %d rates over (%s)" % (len(best), ", ".join(sorted(best))))
 

@@ -26,6 +26,14 @@
     "  deriveK22  true = the site only prints fine 999, so 22K = 24K x 22/24"
   ],
   "refreshMinutes": 60,
+  "market": {
+    "_note": "Not a jeweller - the two market numbers in the headline strip. dP Bullions (Nellore) publishes one tab-separated feed: id, name, bid, ask, high, low, note. We take the ask. Names are matched by prefix because the BIS line carries today's date.",
+    "source": "dP Gold",
+    "url": "https://statewisebcast.dpgold.in:7768/VOTSBroadcastStreaming/Services/xml/GetLiveRateByTemplateID/dpgold",
+    "spot": "GOLD SPOT",
+    "bullion": "GOLD 999 BIS",
+    "usdinr": "USDINR"
+  },
   "merchants": [
     {
       "id": "malabar",
