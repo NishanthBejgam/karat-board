@@ -201,7 +201,27 @@ function paint() {
   $("refreshBtn").hidden = STATIC;
 }
 
+/* The market in the top bar: international spot and Indian 999 bullion, off
+   one bullion dealer's ticker. Gold only - the feed carries no silver pair. */
+function paintMarket() {
+  const mk = STATE.market, el = $("mkt");
+  if (isSilver() || !mk || !(mk.spot || mk.bullion)) { el.hidden = true; return; }
+  const asOf = (mk.source || "Market feed") + (mk.stale ? " · last read " : " · ") + clock(mk.fetched);
+  const perGram = mk.spot && mk.usdinr ? mk.spot * mk.usdinr / 31.1035 : null;
+  const q = [];
+  if (mk.spot) q.push(`<span class="q" title="International spot, USD per troy ounce` +
+    (perGram ? ` - about ${money(perGram)}${UNIT === 10 ? " per 10 g" : " a gram"} before duty and GST` : "") +
+    ` · ${esc(asOf)}"><span class="ql">Gold spot</span><span class="qv">$` +
+    mk.spot.toLocaleString("en-US", { minimumFractionDigits: 2 }) + `<small>/oz</small></span></span>`);
+  if (mk.bullion) q.push(`<span class="q" title="999 bullion, BIS · ${esc(asOf)}">` +
+    `<span class="ql">999 BIS</span><span class="qv">${money(mk.bullion)}` +
+    `<small>${UNIT === 10 ? "/10 g" : "/g"}</small></span></span>`);
+  el.innerHTML = q.join("");
+  el.hidden = false;
+}
+
 function paintHeads(live, best, best22, high, ms) {
+  paintMarket();
   const cheapest = live.find((m) => rateOf(m.rate) === best);
   const spread = (best != null && high != null) ? high - best : null;
   const dearest = live.find((m) => rateOf(m.rate) === high);
@@ -216,22 +236,8 @@ function paintHeads(live, best, best22, high, ms) {
   ];
   heads.push({ k: "Spread across the board", v: spread == null ? null : money(spread),
                w: live.length + " of " + ms.length + " merchants reporting" });
-
-  // The market underneath the jewellers: international spot and Indian 999
-  // bullion, off one bullion dealer's ticker. Gold only - it has no silver pair.
-  const mk = STATE.market;
-  if (!isSilver() && mk && (mk.spot || mk.bullion)) {
-    const asOf = mk.stale ? " · as of " + clock(mk.fetched) : "";
-    const perGram = mk.spot && mk.usdinr ? mk.spot * mk.usdinr / 31.1035 : null;
-    heads.push({ k: "Gold spot", mkt: true,
-      v: mk.spot ? "$" + mk.spot.toLocaleString("en-US", { minimumFractionDigits: 2 }) : null,
-      w: "USD / troy oz" + (perGram ? " · ≈ " + money(perGram) + (UNIT === 10 ? "/10 g" : "/g") : "") + asOf });
-    heads.push({ k: "Bullion 999 · BIS", mkt: true, v: money(mk.bullion),
-      w: (mk.source || "Bullion") + " ask" + asOf });
-  }
-  $("heads").classList.toggle("five", heads.length === 5);
   $("heads").innerHTML = heads.map((h) => `
-    <div class="head${h.mkt ? " mkt" : ""}">
+    <div class="head">
       <span class="k">${h.k}</span>
       <span class="v">${h.v || "—"}</span>
       <span class="w">${esc(h.w)}</span>

@@ -44,23 +44,21 @@
                color: var(--m3-on-surface-var); }
     .head .v { font-size: 25px; font-weight: 800; font-family: var(--mono); letter-spacing: -1px; }
     .head .w { font-size: 12.5px; color: var(--m3-on-surface-var); }
-    /* The two market tiles: the reference the jewellers price off, not a
-       jeweller. A plain hairline instead of the foil, a faint gold wash. */
-    .head.mkt { background: color-mix(in srgb, var(--gold) 7%, var(--m3-surface-1)); }
-    .head.mkt::after { background: var(--m3-outline); }
-    .head.mkt .v { font-size: 22px; }
-    .heads.five { grid-template-columns: repeat(5, 1fr); }
-    @media (max-width: 1100px) {
-      .heads.five { grid-template-columns: repeat(6, 1fr); }
-      .heads.five .head { grid-column: span 2; }
-      .heads.five .head.mkt { grid-column: span 3; }
-    }
-    @media (max-width: 780px) {
-      .heads.five { grid-template-columns: 1fr 1fr; }
-      .heads.five .head { grid-column: span 2; }
-      .heads.five .head.mkt { grid-column: span 1; }
-      .heads.five .head.mkt .v { font-size: 19px; }
-    }
+    /* ---- The market, in the top bar ----
+       What the jewellers price off - international spot and Indian 999
+       bullion - as a quiet readout beside the status dot, not as tiles:
+       it is context for the board, not a rival to it. */
+    .mkt { display: flex; align-items: center; gap: 4px; margin-right: 6px; }
+    .mkt[hidden] { display: none; }
+    .mkt .q { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15;
+              padding: 2px 12px; }
+    .mkt .q + .q { border-left: 1px solid var(--m3-outline-var); }
+    .mkt .ql { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+               color: var(--m3-on-surface-var); }
+    .mkt .qv { font-family: var(--mono); font-size: 16px; font-weight: 800; letter-spacing: -.5px;
+               color: var(--m3-on-surface); }
+    .mkt .qv small { font-family: inherit; font-size: 11px; font-weight: 600; letter-spacing: 0;
+                     color: var(--m3-on-surface-var); margin-left: 2px; }
 
     /* ---- Controls row ---- */
     .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -320,6 +318,8 @@
       .topbar-inner .brand { margin-right: 0; }
       .seg.metal { order: 3; width: 100%; margin: 2px 0 0; justify-content: center; }
       .seg.metal button { flex: 1; justify-content: center; }
+      .mkt { order: 4; width: 100%; justify-content: center; margin: 0; }
+      .mkt .q { align-items: center; }
       .brand-mark { width: 38px; height: 38px; border-radius: 11px; }
       .brand-word { font-size: 19px; }
       .wrap { padding: 0 14px 32px; }
@@ -368,6 +368,7 @@
         <button data-metal="gold" class="on"><i class="pip au"></i>Gold</button>
         <button data-metal="silver"><i class="pip ag"></i>Silver</button>
       </div>
+      <div class="mkt" id="mkt" hidden></div>
       <div class="topbar-actions">
         <span class="meta" id="status" title="Loading…"><span class="dot"></span></span>
         <button class="btn btn-tonal btn-sm" id="refreshBtn" title="Re-read every merchant now">
