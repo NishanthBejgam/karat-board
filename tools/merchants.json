@@ -149,22 +149,22 @@
       "name": "D.P. Jewellers",
       "short": "D.P.",
       "site": "https://www.dpjewellers.com/",
-      "note": "D.P. Abhushan. Straight off their Magento getMetalPrices call.",
+      "note": "D.P. Abhushan. Straight off their storefront's metal_rates API.",
       "source": {
         "adapter": "raw_regex",
         "fetch": "curl",
-        "url": "https://www.dpjewellers.com/graphql?query=query+getMetalPrices%7BmetalPrices%7Brate_id+purity+sale_rate+metal+__typename%7D%7D&operationName=getMetalPrices&variables=%7B%7D",
+        "url": "https://prod-dpj.acmepadm.com/api/v1/metal_rates",
         "buy": {
           "k24": {
-            "pattern": "\"purity\":\"24KT\",\"sale_rate\":([\\d.]+)",
+            "pattern": "\"purity_description\":\"24KT\"[^}]*?\"sale_rate\":\"([\\d.]+)\"",
             "divide": 1
           },
           "k22": {
-            "pattern": "\"purity\":\"22KT\",\"sale_rate\":([\\d.]+)",
+            "pattern": "\"purity_description\":\"22KT\"[^}]*?\"sale_rate\":\"([\\d.]+)\"",
             "divide": 1
           },
           "ag": {
-            "pattern": "\"purity\":\"SL99\\.99\",\"sale_rate\":([\\d.]+)",
+            "pattern": "\"metal_type\":\"silver\"[^}]*?\"sale_rate\":\"([\\d.]+)\"",
             "divide": 1
           }
         }
