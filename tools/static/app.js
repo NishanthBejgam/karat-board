@@ -213,9 +213,9 @@ function paintMarket() {
     (perGram ? ` - about ${money(perGram)}${UNIT === 10 ? " per 10 g" : " a gram"} before duty and GST` : "") +
     ` · ${esc(asOf)}"><span class="ql">Gold spot</span><span class="qv">$` +
     mk.spot.toLocaleString("en-US", { minimumFractionDigits: 2 }) + `<small>/oz</small></span></span>`);
-  if (mk.bullion) q.push(`<span class="q" title="999 bullion, BIS, GST included · ${esc(asOf)}">` +
+  if (mk.bullion) q.push(`<span class="q" title="999 bullion, BIS · ${esc(asOf)}">` +
     `<span class="ql">999 BIS</span><span class="qv">${money(mk.bullion)}` +
-    `<small>${UNIT === 10 ? "/10 g" : "/g"} GST inc.</small></span></span>`);
+    `<small>${UNIT === 10 ? "/10 g" : "/g"}</small></span></span>`);
   el.innerHTML = q.join("");
   el.hidden = false;
 }
