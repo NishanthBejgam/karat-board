@@ -244,6 +244,10 @@ def coupon_alert(prev, state):
     if sig.get("status") != "live":
         print("alert: jewellery coupon not live")
         return
+    worth = float(sig.get("flat") or sig.get("max") or 0)
+    if worth < 500:
+        print("alert: jewellery coupon worth Rs%.0f - below Rs500, not announced" % worth)
+        return
     key = "%s:%s" % (sig.get("rewardId"), sig.get("endsAt"))
     if state["coupon"].get("key") == key:
         print("alert: jewellery coupon %s already announced" % sig.get("rewardId"))
