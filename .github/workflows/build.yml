@@ -38,6 +38,10 @@ on:
         description: "Send the spread alert now, marked TEST, counting carried-over (stale) rates too"
         type: boolean
         default: false
+      alert_resend:
+        description: "Send the real spread alert now even if the same gap went out in the last 6 h"
+        type: boolean
+        default: false
       coupon_test:
         description: "Also send a sample jewellery-coupon alert marked TEST"
         type: boolean
@@ -93,6 +97,7 @@ jobs:
           KB_ALERT_REPEAT_H: "6"
           KB_ALERT_STATE_URL: https://karatboard.yourcardjourney.store/alerts.json
           KB_ALERT_TEST: ${{ github.event.inputs.alert_test == 'true' && '1' || '' }}
+          KB_ALERT_RESEND: ${{ github.event.inputs.alert_resend == 'true' && '1' || '' }}
           KB_COUPON_TEST: ${{ github.event.inputs.coupon_test == 'true' && '1' || '' }}
         run: python tools/build_site.py _site
 

@@ -40,6 +40,19 @@ import urllib.request
 
 BASELINES = ("kalyan", "lalithaa")
 TEST = bool(os.environ.get("KB_ALERT_TEST"))
+# Proxy-rationed merchants (Bhima 4 h, Thangamayil 6 h) carry their last good
+# read between proxy passes. Such a read still counts while it is this young -
+# the user wants the alert, not silence, while a gap like Bhima's holds.
+STALE_OK_H = float(os.environ.get("KB_ALERT_STALE_H") or 6)
+
+
+def _age_h(iso):
+    try:
+        from datetime import datetime, timezone
+        t = datetime.fromisoformat(iso)
+        return (datetime.now(timezone.utc) - t).total_seconds() / 3600.0
+    except Exception:
+        return None
 COUPON_URL = ("https://raw.githubusercontent.com/NishanthBejgam/coupon-watch/"
               "main/signal/coupon.json")
 
@@ -82,8 +95,11 @@ def find_deals(state, pct):
         # A stale tile is last build's number, not today's offer: the gap it
         # shows is against a Kalyan that has since moved. Not worth a trip.
         # KB_ALERT_TEST lets a manual test run include them (message says TEST).
-        if (not r.get("ok") or r.get("stale")) and not (TEST and r.get("buy24")):
-            continue
+        if not r.get("ok") or r.get("stale"):
+            age = _age_h(r.get("fetched") or "")
+            young = age is not None and age <= STALE_OK_H
+            if not r.get("buy24") or not (TEST or young):
+                continue
         for key, karat in (("buy22", "22K"), ("buy24", "24K")):
             mine = r.get(key)
             if not mine:
@@ -144,6 +160,8 @@ def compose(deals, pct, built, rates):
             key = "buy22" if d["karat"] == "22K" else "buy24"
             out += ["", "💰 <b>%s %s - ₹%s/g</b>" % (
                 short, d["karat"], _rs(d["price"]))]
+            if r.get("stale") and r.get("fetched"):
+                out.append("(%s's price as read %s IST)" % (short, _when(r["fetched"])))
             out.append("Compared with")
             for bid in BASELINES:
                 ref = base_rates[bid].get(key)
@@ -286,9 +304,14 @@ def run(out_dir):
     now = time.time()
     state = {"fingerprint": fp, "sentAt": prev.get("sentAt"), "deals": deals,
              "pct": pct, "checkedAt": rates.get("builtAt")}
+    if TEST:
+        state["test"] = True
 
     if deals:
-        same = prev.get("fingerprint") == fp and not TEST
+        # A TEST send does not count as the real alert having gone out.
+        same = (prev.get("fingerprint") == fp and not TEST
+                and not prev.get("test")
+                and not os.environ.get("KB_ALERT_RESEND"))
         aged = now - float(prev.get("sentAt") or 0) >= repeat_h * 3600
         if same and not aged:
             print("alert: unchanged since last message - not repeating yet")
