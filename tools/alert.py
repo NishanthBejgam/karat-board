@@ -39,6 +39,7 @@ import urllib.parse
 import urllib.request
 
 BASELINES = ("kalyan", "lalithaa")
+TEST = bool(os.environ.get("KB_ALERT_TEST"))
 COUPON_URL = ("https://raw.githubusercontent.com/NishanthBejgam/coupon-watch/"
               "main/signal/coupon.json")
 
@@ -80,7 +81,8 @@ def find_deals(state, pct):
         r = m.get("rate") or {}
         # A stale tile is last build's number, not today's offer: the gap it
         # shows is against a Kalyan that has since moved. Not worth a trip.
-        if not r.get("ok") or r.get("stale"):
+        # KB_ALERT_TEST lets a manual test run include them (message says TEST).
+        if (not r.get("ok") or r.get("stale")) and not (TEST and r.get("buy24")):
             continue
         for key, karat in (("buy22", "22K"), ("buy24", "24K")):
             mine = r.get(key)
@@ -126,6 +128,8 @@ def compose(deals, pct, built, rates):
         by_merchant.setdefault(d["id"], []).append(d)
 
     out = ["🪙 <b>GOLD DEAL ALERT</b>", ""]
+    if TEST:
+        out = ["🧪 <b>TEST</b> - gold deal alert, sent by hand", ""] + out
     # Headline: the single biggest gap, in one sentence.
     top = deals[0]
     out.append("<b>%s %s is %.1f%% cheaper than %s</b>" % (
@@ -284,7 +288,7 @@ def run(out_dir):
              "pct": pct, "checkedAt": rates.get("builtAt")}
 
     if deals:
-        same = prev.get("fingerprint") == fp
+        same = prev.get("fingerprint") == fp and not TEST
         aged = now - float(prev.get("sentAt") or 0) >= repeat_h * 3600
         if same and not aged:
             print("alert: unchanged since last message - not repeating yet")
