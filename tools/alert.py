@@ -12,14 +12,14 @@ Telegram message goes to the chat ids in KB_TG_CHATS. Nobody else sees it: the p
 Environment (all optional; with no token this is a no-op that still prints):
   KB_TG_TOKEN          bot token from @BotFather
   KB_TG_CHATS          comma-separated chat ids to notify (one per person/group)
-  KB_ALERT_PCT         threshold, percent below the baseline (default 8.0)
+  KB_ALERT_PCT         threshold, percent below the baseline (default 4.0)
   KB_ALERT_REPEAT_H    re-send the same alert after N hours  (default 6)
   KB_ALERT_STATE_URL   where the previous build's alerts.json lives
 
 Why "cheaper" only: MMTC-PAMP, BRPL and Aspect always sit 2-10% above Kalyan by
 construction (minted product, ex-GST wholesale, spot plus premium). Dearer is
 not a deal and would fire on every build. The rule the user set: a jeweller
-8% or more *below* Kalyan or Lalithaa - the Bhima 22K incident of 2026-09-17,
+4% or more *below* Kalyan or Lalithaa (was 8%; lowered 2026-10-04 after Bhima sat 4.9% under unalerted) - the Bhima 22K incident of 2026-09-17,
 where the storefront printed a rate some ₹1,300 under the board.
 
 Why a state file: the build runs twice an hour and Bhima's gap does not close
@@ -268,7 +268,7 @@ def run(out_dir):
     rates = load_json(os.path.join(out_dir, "rates.json"))
     if not rates:
         return 0
-    pct = float(os.environ.get("KB_ALERT_PCT") or 8.0)
+    pct = float(os.environ.get("KB_ALERT_PCT") or 4.0)
     repeat_h = float(os.environ.get("KB_ALERT_REPEAT_H") or 6)
     deals = find_deals(rates, pct)
     print("alert: %d reading(s) at least %g%% under Kalyan/Lalithaa" % (len(deals), pct))
