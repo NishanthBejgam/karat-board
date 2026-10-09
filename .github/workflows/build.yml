@@ -46,6 +46,10 @@ on:
         description: "Also send a sample jewellery-coupon alert marked TEST"
         type: boolean
         default: false
+      broadcast_test:
+        description: "Send the WhatsApp broadcast image to Telegram now, marked TEST"
+        type: boolean
+        default: false
   push:
     branches: [main]
 
@@ -103,6 +107,22 @@ jobs:
           KB_ALERT_RESEND: ${{ github.event.inputs.alert_resend == 'true' && '1' || '' }}
           KB_COUPON_TEST: ${{ github.event.inputs.coupon_test == 'true' && '1' || '' }}
         run: python tools/build_site.py _site
+
+      # The morning broadcast (tools/broadcast_send.py): on the first build at
+      # or after 10:00 IST, headless Chrome draws the page's WhatsApp image and
+      # the alert bot sends it to KB_TG_CHATS. Playwright is installed only in
+      # the 10:00-13:00 window, so the other builds pay nothing for it.
+      - name: Morning broadcast image
+        env:
+          KB_TG_TOKEN: ${{ secrets.KB_TG_TOKEN }}
+          KB_TG_CHATS: ${{ secrets.KB_TG_CHATS }}
+          KB_BROADCAST_TEST: ${{ github.event.inputs.broadcast_test == 'true' && '1' || '' }}
+        run: |
+          h=$(TZ=Asia/Kolkata date +%H)
+          if [ -n "$KB_BROADCAST_TEST" ] || { [ "$h" -ge 10 ] && [ "$h" -lt 13 ]; }; then
+            pip install --quiet playwright
+            python tools/broadcast_send.py _site
+          fi
 
       # The custom domain has to travel with the artifact.
       - run: cp CNAME _site/CNAME

@@ -73,6 +73,9 @@ def run(out_dir):
 
     keep = sorted(days)[-KEEP_DAYS:]
     out = {"days": {d: days[d] for d in keep}, "builtAt": built}
+    # broadcast_send.py's once-a-day marker rides along in the same file.
+    if prev.get("broadcastSent"):
+        out["broadcastSent"] = prev["broadcastSent"]
     with io.open(os.path.join(out_dir, "daily.json"), "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=1)
     print("daily: %d day(s) on record, today %s with %d merchant(s)"
