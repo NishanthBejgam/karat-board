@@ -69,18 +69,21 @@ def render(out_dir):
     return base64.b64decode(data.split(",", 1)[1])
 
 
-def send_photo(token, chat, png, caption):
+def send_file(token, chat, png, caption, name):
+    """Sent as a document, not a photo: sendPhoto re-encodes to a ~890 px JPEG
+    and the table's small type goes soft. A document arrives byte-for-byte the
+    PNG /broadcast/ downloads, and Telegram still shows it with a preview."""
     boundary = uuid.uuid4().hex
     parts = []
-    for name, value in (("chat_id", chat), ("caption", caption)):
+    for field, value in (("chat_id", chat), ("caption", caption)):
         parts.append(("--%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n"
-                      % (boundary, name, value)).encode("utf-8"))
-    parts.append(("--%s\r\nContent-Disposition: form-data; name=\"photo\"; "
-                  "filename=\"karatboard.png\"\r\nContent-Type: image/png\r\n\r\n"
-                  % boundary).encode("utf-8") + png + b"\r\n")
+                      % (boundary, field, value)).encode("utf-8"))
+    parts.append(("--%s\r\nContent-Disposition: form-data; name=\"document\"; "
+                  "filename=\"%s\"\r\nContent-Type: image/png\r\n\r\n"
+                  % (boundary, name)).encode("utf-8") + png + b"\r\n")
     parts.append(("--%s--\r\n" % boundary).encode("utf-8"))
     req = urllib.request.Request(
-        "https://api.telegram.org/bot%s/sendPhoto" % token, data=b"".join(parts),
+        "https://api.telegram.org/bot%s/sendDocument" % token, data=b"".join(parts),
         headers={"Content-Type": "multipart/form-data; boundary=" + boundary})
     with urllib.request.urlopen(req, timeout=60) as resp:
         return json.loads(resp.read().decode("utf-8")).get("ok")
@@ -115,7 +118,8 @@ def run(out_dir):
     nice = date.fromisoformat(today).strftime("%a, %d %b").replace(" 0", " ")
     caption = ("TEST - " if TEST else "") + \
         "Gold board for %s - ready to forward to the WhatsApp channel" % nice
-    sent = sum(1 for c in chats if send_photo(token, c, png, caption))
+    name = "karatboard-%s.png" % today
+    sent = sum(1 for c in chats if send_file(token, c, png, caption, name))
     print("broadcast: sent to %d of %d chat(s)" % (sent, len(chats)))
 
     if sent and not TEST:
