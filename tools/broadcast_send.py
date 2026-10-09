@@ -116,8 +116,16 @@ def run(out_dir):
     print("broadcast: rendered %d KB" % (len(png) // 1024))
     from datetime import date
     nice = date.fromisoformat(today).strftime("%a, %d %b").replace(" 0", " ")
-    caption = ("TEST - " if TEST else "") + \
-        "Gold board for %s - ready to forward to the WhatsApp channel" % nice
+    # The posting steps travel with the image, so the morning post needs no
+    # memory of how it is done. Plain text - Telegram caps captions at 1024.
+    caption = ("TEST - " if TEST else "") + (
+        "\U0001FA99 KaratBoard · %s — today's channel post\n\n"
+        "Post it on WhatsApp:\n"
+        "1. Tap this image to open it\n"
+        "2. ⋮ → Save to Gallery  (iPhone: Share → Save Image)\n"
+        "3. WhatsApp → Updates → your channel → \U0001F4CE → Gallery\n"
+        "4. Pick it, turn on HD, send\n\n"
+        "Send it as a photo, not a document, so it shows in the feed." % nice)
     name = "karatboard-%s.png" % today
     sent = sum(1 for c in chats if send_file(token, c, png, caption, name))
     print("broadcast: sent to %d of %d chat(s)" % (sent, len(chats)))
