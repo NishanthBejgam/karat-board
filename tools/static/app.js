@@ -226,21 +226,23 @@ function paintHeads(live, best, best22, high, ms) {
   const spread = (best != null && high != null) ? high - best : null;
   const dearest = live.find((m) => rateOf(m.rate) === high);
   const heads = isSilver() ? [
-    { k: "Cheapest silver", v: money(best), w: cheapest ? cheapest.name : "no rate yet" },
-    { k: "Dearest silver", v: money(high), w: dearest ? dearest.name : "no rate yet" },
+    { k: "Cheapest silver", ks: "Low", v: money(best), w: cheapest ? cheapest.name : "no rate yet" },
+    { k: "Dearest silver", ks: "High", v: money(high), w: dearest ? dearest.name : "no rate yet" },
   ] : [
-    { k: "Cheapest 24K", v: money(best), w: cheapest ? cheapest.name : "no rate yet" },
-    { k: "Cheapest 22K", v: money(best22),
+    { k: "Cheapest 24K", ks: "Low 24K", v: money(best), w: cheapest ? cheapest.name : "no rate yet" },
+    { k: "Cheapest 22K", ks: "Low 22K", v: money(best22),
       w: (() => { const c = ms.find((m) => m.rate && m.rate.buy22 === best22);
                   return c ? c.name : "no rate yet"; })() },
   ];
-  heads.push({ k: "Spread across the board", v: spread == null ? null : money(spread),
-               w: live.length + " of " + ms.length + " merchants reporting" });
+  heads.push({ k: "Spread across the board", ks: "Spread", v: spread == null ? null : money(spread),
+               w: live.length + " of " + ms.length + " merchants reporting",
+               ws: live.length + "/" + ms.length + " live" });
+  // ks/ws are the phone labels - the CSS swaps them in when the cards share a row.
   $("heads").innerHTML = heads.map((h) => `
-    <div class="head">
-      <span class="k">${h.k}</span>
+    <div class="head" title="${esc(h.w)}">
+      <span class="k"><span class="k-l">${h.k}</span><span class="k-s">${h.ks}</span></span>
       <span class="v">${h.v || "—"}</span>
-      <span class="w">${esc(h.w)}</span>
+      <span class="w"><span class="w-l">${esc(h.w)}</span><span class="w-s">${esc(h.ws || h.w)}</span></span>
     </div>`).join("");
 }
 

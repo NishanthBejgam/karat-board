@@ -28,7 +28,6 @@
 
     /* ---- Headline strip ---- */
     .heads { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 22px 0 18px; }
-    @media (max-width: 780px) { .heads { grid-template-columns: 1fr; } }
     .head {
       background: var(--m3-surface-1); border: 1px solid var(--m3-outline-var);
       border-radius: var(--r-md); padding: 15px 18px; box-shadow: var(--shadow-1);
@@ -44,6 +43,19 @@
                color: var(--m3-on-surface-var); }
     .head .v { font-size: 25px; font-weight: 800; font-family: var(--mono); letter-spacing: -1px; }
     .head .w { font-size: 12.5px; color: var(--m3-on-surface-var); }
+    .head .k-s, .head .w-s { display: none; }
+    /* Phones: the three headline cards share one row instead of stacking -
+       stacked they ate the whole first screen before a single jeweller showed. */
+    @media (max-width: 780px) {
+      .heads { gap: 8px; }
+      .head { padding: 10px 10px 10px 12px; gap: 2px; min-width: 0; }
+      .head .k-l, .head .w-l { display: none; }
+      .head .k-s, .head .w-s { display: block; }
+      .head .k { font-size: 9.5px; letter-spacing: .6px; }
+      .head .v { font-size: 17px; letter-spacing: -.6px; }
+      .head .w { font-size: 11px; }
+      .head .k, .head .v, .head .w { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    }
     /* ---- The market, in the top bar ----
        What the jewellers price off - international spot and Indian 999
        bullion - as a quiet readout beside the status dot, not as tiles:
