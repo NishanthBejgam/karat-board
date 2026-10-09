@@ -30,8 +30,12 @@ STATIC = os.path.join(HERE, "static")
 # The YourCardJourney logo is deliberately absent: the site repo ignores *.png,
 # the live site already 404s it, and it is 1.4 MB. The credit line is text and a
 # link instead, which is what the published page actually shows.
-ASSETS = ("index.html", "app.js", "broadcast.js", "style.css", "favicon.svg",
-          "favicon-silver.svg")
+ASSETS = ("index.html", "app.js", "marks.js", "broadcast.js", "style.css",
+          "favicon.svg", "favicon-silver.svg")
+
+# The channel owner's page. Unlisted - nothing on the board links to it - and
+# noindex, so the copy-the-image button is not something every visitor gets.
+BROADCAST_PAGE = os.path.join("broadcast", "index.html")
 
 
 def build(out_dir):
@@ -54,11 +58,23 @@ def build(out_dir):
         with io.open(index, encoding="utf-8") as fh:
             html = fh.read()
         html = html.replace('src="app.js"', 'src="app.js?v=%s"' % stamp)
-        html = html.replace('src="broadcast.js"', 'src="broadcast.js?v=%s"' % stamp)
+        html = html.replace('src="marks.js"', 'src="marks.js?v=%s"' % stamp)
         html = html.replace('href="style.css"', 'href="style.css?v=%s"' % stamp)
         with io.open(index, "w", encoding="utf-8", newline="") as fh:
             fh.write(html)
         print("  stamped app.js and style.css with v=%s" % stamp)
+
+    page = os.path.join(STATIC, BROADCAST_PAGE)
+    if os.path.isfile(page):
+        os.makedirs(os.path.join(out_dir, "broadcast"), exist_ok=True)
+        with io.open(page, encoding="utf-8") as fh:
+            html = fh.read()
+        for name in ("marks.js", "broadcast.js", "style.css"):
+            html = html.replace('"../%s"' % name, '"../%s?v=%s"' % (name, stamp))
+        with io.open(os.path.join(out_dir, BROADCAST_PAGE), "w",
+                     encoding="utf-8", newline="") as fh:
+            fh.write(html)
+        print("  copied broadcast/index.html")
 
     # The data. app.py --snapshot does the eight-merchant sweep and writes
     # rates.json; its exit code is non-zero if nothing at all could be read, so

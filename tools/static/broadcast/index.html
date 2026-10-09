@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KaratBoard · Broadcast</title>
+  <!-- Unlisted: linked from nowhere, kept out of search. The board's channel
+       post is made here, not on the public page. -->
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="theme-color" content="#8a5f14" />
+  <link rel="icon" href="../favicon.svg" />
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    .bc-wrap { max-width: 640px; margin: 0 auto; padding: 22px 20px 48px; }
+    .bc-chip {
+      margin-left: auto; font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--m3-primary); padding: 6px 12px;
+      border-radius: 999px; background: var(--m3-primary-container);
+    }
+    .bc-stage {
+      position: relative; margin: 0 auto; max-width: 540px; aspect-ratio: 1080 / 1546;
+      border-radius: 18px; overflow: hidden; background: var(--m3-surface-2);
+      border: 1px solid var(--m3-outline-var); box-shadow: var(--shadow-3);
+    }
+    .bc-stage img { display: block; width: 100%; height: auto; }
+    .bc-stage.busy::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%);
+      background-size: 220% 100%; animation: bc-sheen 1.3s linear infinite;
+    }
+    @keyframes bc-sheen { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+    .bc-acts { display: flex; gap: 10px; justify-content: center; margin: 20px 0 10px; flex-wrap: wrap; }
+    .bc-acts .btn { min-width: 150px; }
+    .bc-meta { text-align: center; font-size: 12.5px; color: var(--m3-on-surface-var); line-height: 1.6; }
+    .bc-meta b { color: var(--m3-on-surface); font-weight: 650; }
+    .bc-err { color: var(--m3-error); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="../" style="text-decoration:none;color:inherit">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff"
+               stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path class="an-bar" d="M9.6 4.6h6.2l1.5 4.2H8.1z" fill="#fff" fill-opacity=".28"/>
+            <path class="an-bar" d="M4.4 11.1h6.2l1.5 4.2H2.9z" fill="#fff" fill-opacity=".28"/>
+            <path class="an-bar" d="M13.4 11.1h6.2l1.5 4.2h-9.2z" fill="#fff" fill-opacity=".28"/>
+            <path class="an-bar" d="M8.9 17.6h6.2l1.5 4.2H7.4z" fill="#fff" fill-opacity=".28"/>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <span class="brand-word">Karat<em>Board</em></span>
+          <span class="brand-tag">Multi jewellers · One screen</span>
+        </div>
+      </a>
+      <span class="bc-chip">Broadcast</span>
+    </div>
+  </header>
+
+  <main class="bc-wrap">
+    <div class="bc-stage busy" id="stage"><img id="shot" alt="Today's KaratBoard broadcast image" hidden /></div>
+    <div class="bc-acts">
+      <button class="btn btn-filled" id="goBtn" disabled>
+        <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M8 8V5.5A1.5 1.5 0 0 1 9.5 4h9A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H16M5.5 8h9A1.5 1.5 0 0 1 16 9.5v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 18.5v-9A1.5 1.5 0 0 1 5.5 8Z"/></svg>
+        <span>Copy image</span>
+      </button>
+      <button class="btn btn-tonal" id="dlBtn" disabled>
+        <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14"/></svg>
+        <span>Download</span>
+      </button>
+    </div>
+    <p class="bc-meta" id="meta">Drawing today's board…</p>
+  </main>
+
+  <div class="snackbar" id="snack"><span id="snackText"></span></div>
+
+  <script src="../marks.js"></script>
+  <script src="../broadcast.js"></script>
+  <script>
+    /* The channel owner's page: render the broadcast image, then copy it
+       (laptop), share it (phone) or download it. Same picture the 10 AM
+       Telegram send carries - tools/broadcast_send.py draws it from here. */
+    const $ = (id) => document.getElementById(id);
+    let STATE = null, DAILY = null, PNG = null;
+
+    function snack(msg) {
+      $("snackText").textContent = msg;
+      $("snack").classList.add("show");
+      clearTimeout(snack._t);
+      snack._t = setTimeout(() => $("snack").classList.remove("show"), 2600);
+    }
+    const phone = () => matchMedia("(pointer: coarse)").matches && !!(navigator.canShare && window.File);
+    const fileName = () => "karatboard-" + (STATE.builtAt || STATE.now || "").slice(0, 10) + ".png";
+    const at = (iso) => new Date(iso).toLocaleTimeString("en-IN",
+      { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }).toUpperCase();
+
+    function download(blob) {
+      const url = URL.createObjectURL(blob);
+      const a = Object.assign(document.createElement("a"), { href: url, download: fileName() });
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    }
+
+    async function go() {
+      // Phones: the share sheet reaches a WhatsApp channel directly.
+      if (phone()) {
+        try {
+          const file = new File([PNG], fileName(), { type: "image/png" });
+          if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; }
+        } catch (e) { if (e && e.name === "AbortError") return; }
+      }
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": PNG })]);
+        snack("Image copied — paste it into the WhatsApp channel");
+      } catch (e) {
+        download(PNG);
+        snack("Couldn't copy here — downloaded it instead");
+      }
+    }
+
+    (async () => {
+      try {
+        const r = await fetch("../rates.json?t=" + Date.now());
+        if (!r.ok) throw new Error("no rates.json");
+        STATE = await r.json();
+        DAILY = await loadDaily("../");
+        const cv = await drawBroadcast(STATE, DAILY);
+        PNG = await new Promise((ok, no) =>
+          cv.toBlob((b) => b ? ok(b) : no(new Error("could not render")), "image/png"));
+        $("shot").src = URL.createObjectURL(PNG);
+        $("shot").hidden = false;
+        $("stage").classList.remove("busy");
+        $("stage").style.aspectRatio = cv.width + " / " + cv.height;
+
+        if (phone()) $("goBtn").querySelector("span").textContent = "Share to WhatsApp";
+        $("goBtn").disabled = $("dlBtn").disabled = false;
+        $("goBtn").onclick = go;
+        $("dlBtn").onclick = () => download(PNG);
+
+        const today = (STATE.builtAt || STATE.now || "").slice(0, 10);
+        const past = Object.keys((DAILY && DAILY.days) || {}).filter((d) => d < today).sort();
+        const vs = past.length
+          ? "compared with the close on <b>" + new Date(past[past.length - 1] + "T12:00:00+05:30")
+              .toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" }) + "</b>"
+          : "no earlier close on record yet, so the trend is left out";
+        $("meta").innerHTML = "Rates read at <b>" + at(STATE.lastRefresh || STATE.builtAt) +
+          " IST</b> · " + vs + "<br>Reload for the latest — the board updates twice an hour.";
+      } catch (e) {
+        $("stage").classList.remove("busy");
+        $("meta").innerHTML = '<span class="bc-err">Couldn\'t draw the image — reload to try again.</span>';
+        console.error(e);
+      }
+    })();
+  </script>
+</body>
+</html>

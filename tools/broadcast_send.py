@@ -3,14 +3,14 @@
 WhatsApp has no API that posts to a Channel, and the unofficial ones risk the
 number (and the channel with it). So the build does everything up to the last
 tap: once a day, on the first build at or after KB_BROADCAST_HOUR IST, it renders
-the same image the page's "Copy image" button makes and sends it through the
+the same image the /broadcast/ page makes and sends it through the
 spread-alert bot to KB_TG_CHATS. Forwarding it to the channel is ten seconds.
 
     python broadcast_send.py <dir-with-rates.json-and-daily.json>
 
-The image is not redrawn in Python: a headless Chrome opens the built page and
-calls broadcast.js's drawBroadcast(), so the Telegram copy and the button's copy
-can never drift apart. GitHub's Ubuntu runners ship Google Chrome; Playwright
+The image is not redrawn in Python: a headless Chrome opens the built
+/broadcast/ page and takes the PNG it rendered, so the Telegram copy and the
+page's copy can never drift apart. GitHub's Ubuntu runners ship Google Chrome; Playwright
 only drives it.
 
 Once a day: the date it went out is kept in daily.json (broadcastSent), which
@@ -56,14 +56,13 @@ def render(out_dir):
                 subprocess.call([sys.executable, "-m", "playwright", "install", "chromium"])
                 browser = p.chromium.launch()
             page = browser.new_page()
-            page.goto(url, wait_until="networkidle", timeout=60000)
-            page.wait_for_function(
-                "typeof STATE !== 'undefined' && STATE && typeof drawBroadcast === 'function'",
-                timeout=30000)
-            data = page.evaluate("""async () => {
-                const cv = await drawBroadcast(STATE, await loadDaily());
-                return cv.toDataURL("image/png");
-            }""")
+            page.goto(url + "broadcast/", wait_until="networkidle", timeout=60000)
+            page.wait_for_function("PNG !== null", timeout=60000)
+            data = page.evaluate("""() => new Promise((ok) => {
+                const fr = new FileReader();
+                fr.onload = () => ok(fr.result);
+                fr.readAsDataURL(PNG);
+            })""")
             browser.close()
     finally:
         server.shutdown()

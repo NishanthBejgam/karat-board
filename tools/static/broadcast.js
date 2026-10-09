@@ -8,7 +8,11 @@
    Drawn on a canvas rather than screenshotted from the page, so it looks the
    same from a phone, a laptop or a dark-themed browser. Laid out at 540 px wide
    and painted at 2x, which lands on WhatsApp's 1080 px. Uses the board's own
-   pieces: Inter, the bullion-bar mark, the foil, and MARKS from app.js.
+   pieces: Inter, the bullion-bar mark, the foil, and MARKS from marks.js.
+
+   Only /broadcast/ loads this - an unlisted page for the channel owner. The
+   public board deliberately has no copy button: the image is the channel's
+   post, not something every visitor should be re-broadcasting.
 
    "Yesterday" is the last reading before midnight IST, from daily.json - one
    close per day, kept by tools/daily.py. Locally there is no daily.json, so the
@@ -409,73 +413,12 @@ async function drawBroadcast(state, daily) {
   return cv;
 }
 
-/* ---- getting it out ---- */
-async function loadDaily() {
+/* ---- yesterday's closes ---- */
+// `base` is where daily.json sits relative to the calling page ("../" from
+// /broadcast/). Locally there is none, and the image just leaves the trend out.
+async function loadDaily(base) {
   try {
-    const r = await fetch("daily.json?t=" + Date.now());
+    const r = await fetch((base || "") + "daily.json?t=" + Date.now());
     return r.ok ? await r.json() : null;
   } catch (e) { return null; }
-}
-
-// Rendered ahead of the click and kept, so the click itself can hand a ready
-// Blob to the clipboard or the share sheet. Safari (and iOS share) only allow
-// those inside the tap, and fonts plus fifteen marks take longer than that.
-let BC_READY = null, BC_FOR = null;
-function primeBroadcast() {
-  if (!STATE || BC_FOR === STATE) return BC_READY;
-  BC_FOR = STATE;
-  BC_READY = (async () => {
-    const cv = await drawBroadcast(STATE, await loadDaily());
-    return await new Promise((ok, no) =>
-      cv.toBlob((b) => b ? ok(b) : no(new Error("could not render")), "image/png"));
-  })();
-  BC_READY.catch(() => { BC_FOR = null; });
-  return BC_READY;
-}
-
-const bcPhone = () => matchMedia("(pointer: coarse)").matches &&
-  !!(navigator.canShare && window.File);
-const bcName = () => "karatboard-" + ((STATE && (STATE.builtAt || STATE.now)) ||
-  new Date().toISOString()).slice(0, 10) + ".png";
-
-async function shareBroadcast() {
-  const pending = primeBroadcast();
-  if (!pending) return;
-  // Phones: the share sheet goes straight to a WhatsApp channel, where a copied
-  // image would need a long-press paste that most keyboards cannot do.
-  if (bcPhone()) {
-    try {
-      const file = new File([await pending], bcName(), { type: "image/png" });
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file] });
-        return;
-      }
-    } catch (e) {
-      if (e && e.name === "AbortError") return;     // they closed the sheet
-    }
-  }
-  try {
-    if (!navigator.clipboard || !window.ClipboardItem) throw new Error("no clipboard");
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": pending })]);
-    snack("Image copied — paste it into WhatsApp");
-  } catch (e) {
-    try {
-      const url = URL.createObjectURL(await pending);
-      const a = Object.assign(document.createElement("a"), { href: url, download: bcName() });
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-      snack("Couldn't copy here — downloaded the image instead");
-    } catch (e2) {
-      snack("Couldn't make the image — try again in a moment");
-      console.error(e2);
-    }
-  }
-}
-
-{
-  const btn = $("bcBtn");
-  if (btn) {
-    if (bcPhone()) btn.querySelector("span").textContent = "Share image";
-    btn.onclick = shareBroadcast;
-  }
 }
