@@ -433,6 +433,11 @@
           <button data-unit="1" class="on">Per gram</button>
           <button data-unit="10">Per 10 g</button>
         </div>
+        <button class="btn btn-tonal btn-sm" id="bcBtn" hidden
+                title="One image of the whole board, ready to paste into WhatsApp">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5zM4 15l4.5-4.5 4 4 2.5-2.5L20 17"/><circle cx="15.5" cy="8.5" r="1.4" fill="currentColor"/></svg>
+          <span>Copy image</span>
+        </button>
       </div>
       <span class="meta" id="statusText">Loading…</span>
     </div>
@@ -467,5 +472,6 @@
   <div class="snackbar" id="snack"><span id="snackText"></span></div>
 
   <script src="app.js"></script>
+  <script src="broadcast.js"></script>
 </body>
 </html>

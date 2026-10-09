@@ -96,6 +96,9 @@ jobs:
           KB_ALERT_PCT: ${{ github.event.inputs.alert_pct || '4.0' }}
           KB_ALERT_REPEAT_H: "6"
           KB_ALERT_STATE_URL: https://karatboard.yourcardjourney.store/alerts.json
+          # The broadcast image's "since yesterday" - a week of daily closes,
+          # read back off the live site because the runner starts blank.
+          KB_DAILY_URL: https://karatboard.yourcardjourney.store/daily.json
           KB_ALERT_TEST: ${{ github.event.inputs.alert_test == 'true' && '1' || '' }}
           KB_ALERT_RESEND: ${{ github.event.inputs.alert_resend == 'true' && '1' || '' }}
           KB_COUPON_TEST: ${{ github.event.inputs.coupon_test == 'true' && '1' || '' }}

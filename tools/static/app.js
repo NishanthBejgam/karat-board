@@ -199,6 +199,9 @@ function paint() {
   $("statusText").textContent = line;
   $("refreshBtn").disabled = busy;
   $("refreshBtn").hidden = STATIC;
+  // The broadcast image is gold only; render it ahead so a tap can share it.
+  $("bcBtn").hidden = isSilver();
+  if (!isSilver() && typeof primeBroadcast === "function") primeBroadcast();
 }
 
 /* The market in the top bar: international spot and Indian 999 bullion, off

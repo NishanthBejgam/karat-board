@@ -30,7 +30,8 @@ STATIC = os.path.join(HERE, "static")
 # The YourCardJourney logo is deliberately absent: the site repo ignores *.png,
 # the live site already 404s it, and it is 1.4 MB. The credit line is text and a
 # link instead, which is what the published page actually shows.
-ASSETS = ("index.html", "app.js", "style.css", "favicon.svg", "favicon-silver.svg")
+ASSETS = ("index.html", "app.js", "broadcast.js", "style.css", "favicon.svg",
+          "favicon-silver.svg")
 
 
 def build(out_dir):
@@ -53,6 +54,7 @@ def build(out_dir):
         with io.open(index, encoding="utf-8") as fh:
             html = fh.read()
         html = html.replace('src="app.js"', 'src="app.js?v=%s"' % stamp)
+        html = html.replace('src="broadcast.js"', 'src="broadcast.js?v=%s"' % stamp)
         html = html.replace('href="style.css"', 'href="style.css?v=%s"' % stamp)
         with io.open(index, "w", encoding="utf-8", newline="") as fh:
             fh.write(html)
@@ -67,6 +69,12 @@ def build(out_dir):
     if code:
         print("sweep failed - not publishing an empty board")
         return code
+
+    # The day's close, for the broadcast image's "since yesterday". Unlike the
+    # alert this one can stop the build: publishing without it would wipe the
+    # week of history the next build reads back.
+    if subprocess.call([sys.executable, os.path.join(HERE, "daily.py"), out_dir]):
+        return 1
 
     # Spread alert. Reads the rates.json just written - no merchant is asked
     # twice - and pings a few Telegram chats if a jeweller undercuts Kalyan.
