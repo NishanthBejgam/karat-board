@@ -1,7 +1,7 @@
 /* Karat Board — the broadcast image.
 
    One PNG that says the whole board at a glance, made to be pasted into a
-   WhatsApp channel: the trend since yesterday, the best buy on a gold ribbon,
+   WhatsApp channel: the trend over two days, the best buy on a gold ribbon,
    and every jeweller's 24K and 22K in one table. Gold only, per gram, every
    merchant regardless of the picker - it is "the board", not one visitor's view.
 
@@ -19,6 +19,7 @@
    image simply leaves out the trend and the day column. */
 
 const BC_W = 540, BC_SCALE = 2, BC_PAD = 20;
+const BC_BACK = 2;      // compare against the close this many days back
 // Refiners quote a minted coin with its premium in, not a shop's rate. They get
 // their own section and never count towards "typical" or "best".
 const REFINERS = new Set(["mmtc", "brpl"]);
@@ -58,7 +59,11 @@ function broadcastData(state, daily) {
   const today = (state.builtAt || state.now || "").slice(0, 10);
   const days = (daily && daily.days) || {};
   const past = Object.keys(days).filter((d) => d < today).sort();
-  const yday = past.length ? days[past[past.length - 1]] : null;
+  // The move is measured over BC_BACK closes (the user's call: two days says
+  // more than one, which on a weekend is mostly dashes). Falls back to
+  // yesterday while the record is shorter than that.
+  const back = Math.min(BC_BACK, past.length);
+  const yday = back ? days[past[past.length - back]] : null;
 
   let trend = null, spotPct = null;
   if (yday) {
@@ -79,7 +84,7 @@ function broadcastData(state, daily) {
   }).filter((v) => v != null);
   if (typ24) series.push(typ24);
 
-  return { shops, refs, typ24, typ22, best24, best22, when, trend, spotPct,
+  return { shops, refs, typ24, typ22, best24, best22, when, trend, spotPct, back,
            series, spot: state.market && state.market.spot };
 }
 
@@ -248,8 +253,11 @@ async function drawBroadcast(state, daily) {
     ctx.fillStyle = fg; ctx.textAlign = "left"; ctx.fillText(amt, L + 34, y + 25);
     tx = L + pw + 14;
     bcFont(ctx, 700, 15.5); ctx.fillStyle = BCC.ink;
-    ctx.fillText(dir > 0 ? "Gold is costlier than yesterday"
-      : dir < 0 ? "Gold is cheaper than yesterday" : "Gold is steady since yesterday", tx, y + 15);
+    const ago = d.back > 1 ? d.back + " days ago" : "yesterday";
+    ctx.fillText(dir > 0 ? "Gold is costlier than " + ago
+      : dir < 0 ? "Gold is cheaper than " + ago
+      : d.back > 1 ? "Gold is steady over " + d.back + " days" : "Gold is steady since yesterday",
+      tx, y + 15);
   } else {
     bcFont(ctx, 700, 15.5); ctx.fillStyle = BCC.ink; ctx.textAlign = "left";
     ctx.fillText("Today's gold rates", tx, y + 15);
@@ -357,7 +365,7 @@ async function drawBroadcast(state, daily) {
   bcTracked(ctx, "JEWELLER", COL.name, y + 4, 1.4);
   bcTracked(ctx, "24K", COL.k24, y + 4, 1.4, "right");
   bcTracked(ctx, "22K", COL.k22, y + 4, 1.4, "right");
-  if (hasDay) bcTracked(ctx, "DAY", COL.day, y + 4, 1.4, "right");
+  if (hasDay) bcTracked(ctx, d.back > 1 ? d.back + " DAYS" : "DAY", COL.day, y + 4, 1.4, "right");
   y += 14;
 
   const row = (m, i, ref) => {

@@ -143,7 +143,7 @@
         const today = (STATE.builtAt || STATE.now || "").slice(0, 10);
         const past = Object.keys((DAILY && DAILY.days) || {}).filter((d) => d < today).sort();
         const vs = past.length
-          ? "compared with the close on <b>" + new Date(past[past.length - 1] + "T12:00:00+05:30")
+          ? "compared with the close on <b>" + new Date(past[past.length - Math.min(BC_BACK, past.length)] + "T12:00:00+05:30")
               .toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" }) + "</b>"
           : "no earlier close on record yet, so the trend is left out";
         $("meta").innerHTML = "Rates read at <b>" + at(STATE.lastRefresh || STATE.builtAt) +
