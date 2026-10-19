@@ -293,3 +293,43 @@ html[data-metal="silver"] .brand-mark { color: rgba(18, 30, 41, .58); }
 html[data-metal="silver"] .brand-mark svg path {
   stroke: rgba(18, 30, 41, .58); fill: rgba(18, 30, 41, .58);
 }
+
+/* WhatsApp alerts - a red pill that reads as a notification waiting to be
+   opened: labelled, haloed, and the bell gives a swing every few seconds. */
+.alert-btn {
+  position: relative; width: auto; height: 38px; padding: 0 14px 0 11px; gap: 7px;
+  border-radius: 999px; border: 0; isolation: isolate;
+  display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
+  font-size: 13px; font-weight: 800; letter-spacing: .1px; white-space: nowrap; color: #fff;
+  background: linear-gradient(135deg, #ff5a4e 0%, #e5262b 55%, #c4141d 100%);
+  box-shadow: 0 6px 16px rgba(214, 32, 40, .38), inset 0 1px 0 rgba(255, 255, 255, .35);
+  transition: transform .25s cubic-bezier(.34, 1.56, .64, 1), box-shadow .2s, filter .2s;
+}
+.alert-btn:hover { transform: translateY(-1px) scale(1.04); filter: saturate(1.1);
+  box-shadow: 0 10px 24px rgba(214, 32, 40, .48), inset 0 1px 0 rgba(255, 255, 255, .4); }
+.alert-btn::after {                         /* the halo */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1;
+  animation: alertHalo 2.4s ease-out infinite;
+}
+.alert-btn svg { flex: none; overflow: visible; transform-origin: 12px 3px;
+  animation: alertSwing 4.8s ease-in-out infinite; }
+.alert-btn .alert-ping {
+  position: absolute; top: 6px; left: 22px; right: auto; width: 8px; height: 8px; border-radius: 50%;
+  background: #ffd23f; box-shadow: 0 0 0 2px #e5262b; animation: none;
+}
+.alert-btn .alert-txt .s { display: none; }
+@keyframes alertHalo {
+  0%   { box-shadow: 0 0 0 0 rgba(229, 38, 43, .55); }
+  70%, 100% { box-shadow: 0 0 0 11px rgba(229, 38, 43, 0); }
+}
+@keyframes alertSwing {
+  0%, 72%, 100% { transform: rotate(0); }
+  76% { transform: rotate(16deg); }  80% { transform: rotate(-14deg); }
+  84% { transform: rotate(10deg); }  88% { transform: rotate(-6deg); }  92% { transform: rotate(2deg); }
+}
+@media (max-width: 520px) {
+  .alert-btn { padding: 0 12px 0 10px; gap: 6px; }
+  .alert-btn .alert-txt .l { display: none; }
+  .alert-btn .alert-txt .s { display: inline; }
+}
+@media (prefers-reduced-motion: reduce) { .alert-btn::after, .alert-btn svg { animation: none; } }
