@@ -294,6 +294,7 @@
         "fetch": "urllib",
         "caFile": "certs/sectigo-dv-r36.pem",
         "url": "https://navrathan.com/",
+        "proxyParams": "proxy_country=IN&browser=false",
         "buy": {
           "k24": {
             "pattern": "Gold 24K\\s*-\\s*₹\\s*([\\d,.]+)",
