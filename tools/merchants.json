@@ -284,35 +284,6 @@
       }
     },
     {
-      "id": "navrathan",
-      "name": "Navrathan Jewellers",
-      "short": "Navrathan",
-      "site": "https://navrathan.com",
-      "note": "Read off the Today's Price menu on their homepage. Their 24K sits well above the others' - it looks like a coin rate.",
-      "source": {
-        "adapter": "text_regex",
-        "fetch": "urllib",
-        "caFile": "certs/sectigo-dv-r36.pem",
-        "url": "https://navrathan.com/",
-        "proxyParams": "proxy_type=residential&browser=true&wait_for_selector=.menu-listing-style",
-        "proxyMaxAttempts": 2,
-        "buy": {
-          "k24": {
-            "pattern": "Gold 24K\\s*-\\s*₹\\s*([\\d,.]+)",
-            "divide": 1
-          },
-          "k22": {
-            "pattern": "Gold 22K\\s*-\\s*₹\\s*([\\d,.]+)",
-            "divide": 1
-          },
-          "ag": {
-            "pattern": "Silver\\s*-\\s*₹\\s*([\\d,.]+)\\s*Kg",
-            "divide": 1000
-          }
-        }
-      }
-    },
-    {
       "id": "joyalukkas",
       "name": "Joyalukkas",
       "short": "Joyalukkas",
