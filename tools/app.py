@@ -279,7 +279,7 @@ def _fetch_once(url, mode, timeout, headers=None, ca=None):
         with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
             return resp.read()
     except urllib.error.HTTPError as exc:
-        if exc.code in (401, 403, 429):
+        if exc.code in (401, 403, 423, 429):
             raise Refused("HTTP %d - the site refused this IP" % exc.code)
         raise RuntimeError("HTTP %d" % exc.code)
 
