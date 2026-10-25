@@ -20,6 +20,8 @@
     "     link_only   nothing to scrape - tile links out (or key a rate in by hand)",
     "  source.fetch    curl (Windows curl.exe - gets past bot walls) or urllib",
     "  source.headers  extra request headers, for a feed that is open but keyed",
+    "  source.caFile   urllib only: an intermediate cert (path under tools/) for a",
+    "                  site whose server leaves it out of the chain",
     "  buy/sell.k24/k22  { pattern, divide }  pattern group 1 is the number,",
     "                    divide turns it into a per-gram rate (10 for a 10g price)",
     "  deriveK24  true = the site only prints 22K, so 24K = 22K x 24/22",
@@ -289,7 +291,8 @@
       "note": "Read off the Today's Price menu on their homepage. Their 24K sits well above the others' - it looks like a coin rate.",
       "source": {
         "adapter": "text_regex",
-        "fetch": "curl",
+        "fetch": "urllib",
+        "caFile": "certs/sectigo-dv-r36.pem",
         "url": "https://navrathan.com/",
         "buy": {
           "k24": {
