@@ -295,7 +295,6 @@
         "caFile": "certs/sectigo-dv-r36.pem",
         "url": "https://navrathan.com/",
         "proxyParams": "proxy_type=residential&browser=true&wait_for_selector=.menu-listing-style",
-        "proxyAfterHours": 3,
         "proxyMaxAttempts": 2,
         "buy": {
           "k24": {
