@@ -97,6 +97,12 @@ def build(out_dir):
     # Private to whoever is in KB_TG_CHATS; the page itself never changes.
     subprocess.call([sys.executable, os.path.join(HERE, "alert.py"), out_dir])
 
+    # Deal watches for the other boards (watches.json), on the same bot. Stops
+    # the build only when last build's watch.json could not be read back -
+    # publishing then would wipe the history the 'jump' rule averages.
+    if subprocess.call([sys.executable, os.path.join(HERE, "watch.py"), out_dir]):
+        return 1
+
     print("site ready in", out_dir)
     return 0
 

@@ -1,0 +1,40 @@
+{
+  "_help": [
+    "Deal watches, run by tools/watch.py on every Karat Board build (every 30 min).",
+    "Add a watch = add an entry below. 'source' picks a reader in watch.py SOURCES;",
+    "'rule' picks a test in watch.py RULES. Set enabled false to pause one.",
+    "Rules: 'above' fires when an item's value >= 'above'.",
+    "       'jump' fires when value >= its own average over the last 'window_days'",
+    "       days (needs 'min_days' days of history) + 'jump_pts' points.",
+    "repeat_h: re-send a still-firing item after N hours; a rise of 'rise_pts' sends at once."
+  ],
+  "watches": [
+    {
+      "id": "giftdeals-jump",
+      "enabled": true,
+      "title": "🎁 GIFT CARD DISCOUNT JUMP",
+      "source": "giftdeals",
+      "url": "https://giftdeals.yourcardjourney.workers.dev/api/deals",
+      "link": "https://giftdeals.yourcardjourney.store",
+      "rule": "jump",
+      "min_days": 4,
+      "window_days": 14,
+      "jump_pts": 2.0,
+      "min_value": 3.0,
+      "repeat_h": 24,
+      "rise_pts": 1.0
+    },
+    {
+      "id": "mokobara-75",
+      "enabled": true,
+      "title": "🧳 MOKOBARA PRICE CRASH",
+      "source": "brands",
+      "url": "https://brands.yourcardjourney.store/mokobara/products.json",
+      "link": "https://brands.yourcardjourney.store/mokobara/",
+      "rule": "above",
+      "above": 75.0,
+      "repeat_h": 24,
+      "rise_pts": 2.0
+    }
+  ]
+}

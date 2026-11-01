@@ -50,6 +50,10 @@ on:
         description: "Send the WhatsApp broadcast image to Telegram now, marked TEST"
         type: boolean
         default: false
+      watch_test:
+        description: "Send each deal watch's top 3 (GiftDeals, Mokobara...) now, marked TEST"
+        type: boolean
+        default: false
   push:
     branches: [main]
 
@@ -106,6 +110,10 @@ jobs:
           KB_ALERT_TEST: ${{ github.event.inputs.alert_test == 'true' && '1' || '' }}
           KB_ALERT_RESEND: ${{ github.event.inputs.alert_resend == 'true' && '1' || '' }}
           KB_COUPON_TEST: ${{ github.event.inputs.coupon_test == 'true' && '1' || '' }}
+          # Deal watches (tools/watch.py + watches.json): other boards' alerts
+          # on the same bot. Day-by-day history read back off the live site.
+          KB_WATCH_STATE_URL: https://karatboard.yourcardjourney.store/watch.json
+          KB_WATCH_TEST: ${{ github.event.inputs.watch_test == 'true' && '1' || '' }}
         run: python tools/build_site.py _site
 
       # The morning broadcast (tools/broadcast_send.py): on the first build at
