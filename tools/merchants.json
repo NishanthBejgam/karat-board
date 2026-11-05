@@ -368,7 +368,7 @@
         "url": "https://www.bhimagold.com/",
         "proxyParams": "proxy_country=IN&browser=false",
         "proxyFirst": true,
-        "proxyAfterHours": 4,
+        "proxyAfterHours": 0,
         "buy": {
           "k24": {
             "pattern": "Online Gold Rate 24 KT \\(999\\)\",\"rate\":\"₹([\\d,\\.]+)/g",
