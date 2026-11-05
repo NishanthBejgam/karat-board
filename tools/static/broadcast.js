@@ -44,7 +44,8 @@ const median = (xs) => {
 
 /* ---- the numbers ---- */
 function broadcastData(state, daily) {
-  const all = state.merchants.filter((m) => m.rate && m.rate.buy24)
+  // Overdue (red on the board) means the number is suspect: not in the broadcast.
+  const all = state.merchants.filter((m) => m.rate && m.rate.buy24 && !m.rate.overdue)
     .map((m) => ({ id: m.id, name: m.short || m.name, full: m.name,
                    b24: m.rate.buy24, b22: m.rate.buy22 }))
     .sort((a, b) => a.b24 - b.b24);

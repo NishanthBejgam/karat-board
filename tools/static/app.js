@@ -163,11 +163,13 @@ function paint() {
   const ms = STATE.merchants.filter(shows).filter((m) => !isSilver() || publishes(m));
   paintPicker();
 
-  // The cheapest live rate on the board, ignoring anything that failed.
-  const live = ms.filter((m) => m.rate && rateOf(m.rate));
+  // The cheapest live rate on the board, ignoring anything that failed and
+  // anything overdue (red time on the tile): that number is suspect, so it must
+  // not win "cheapest" or stretch the spread.
+  const live = ms.filter((m) => m.rate && !m.rate.overdue && rateOf(m.rate));
   const best = live.length ? Math.min(...live.map((m) => rateOf(m.rate))) : null;
   const high = live.length ? Math.max(...live.map((m) => rateOf(m.rate))) : null;
-  const live22 = ms.filter((m) => m.rate && m.rate.buy22);
+  const live22 = ms.filter((m) => m.rate && !m.rate.overdue && m.rate.buy22);
   const best22 = live22.length ? Math.min(...live22.map((m) => m.rate.buy22)) : null;
 
   paintHeads(live, best, best22, high, ms);
@@ -231,7 +233,7 @@ function paintHeads(live, best, best22, high, ms) {
   ] : [
     { k: "Cheapest 24K", ks: "Low 24K", v: money(best), w: cheapest ? cheapest.name : "no rate yet" },
     { k: "Cheapest 22K", ks: "Low 22K", v: money(best22),
-      w: (() => { const c = ms.find((m) => m.rate && m.rate.buy22 === best22);
+      w: (() => { const c = ms.find((m) => m.rate && !m.rate.overdue && m.rate.buy22 === best22);
                   return c ? c.name : "no rate yet"; })() },
   ];
   heads.push({ k: "Spread across the board", ks: "Spread", v: spread == null ? null : money(spread),
@@ -381,7 +383,7 @@ function card(m, best24) {
   const el = document.createElement("article");
   el.className = "card";
   if (m.note) el.title = m.note;
-  const isBest = rateOf(r) && rateOf(r) === best24;
+  const isBest = rateOf(r) && !r.overdue && rateOf(r) === best24;
   if (isBest) el.classList.add("best");
   if (!rateOf(r) && !(isSilver() ? false : r.buy22)) el.classList.add("dim");
 
@@ -430,7 +432,8 @@ function card(m, best24) {
 
 
     <div class="foot">
-      <span class="when">${(r.buy24 || r.buy22)
+      <span class="when${r.overdue ? " late" : ""}"${r.overdue
+        ? ' title="Overdue for a read - left out of Cheapest and the broadcast"' : ""}>${(r.buy24 || r.buy22)
         ? "as of " + clock(r.fetched) + " · " + ago(r.fetched)
         : "no rate on the board yet"}</span>
       <span class="acts">

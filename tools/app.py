@@ -697,6 +697,32 @@ def refresher():
 # --------------------------------------------------------------------------- #
 #  What the screen gets
 # --------------------------------------------------------------------------- #
+READ_EVERY_MINUTES = 30    # the sweep's rhythm; proxyAfterHours overrides it
+READ_GRACE_MINUTES = 30
+
+
+def is_overdue(rate, src):
+    """Has this rate outlived the rhythm its merchant is meant to keep?
+
+    Bhima is due every 4 h, Tanishq every 24 h, the rest every sweep. Past that
+    plus a grace, the number is suspect: the page shows its time in red, and it
+    is left out of "cheapest" and the broadcast. Age is taken at the moment the
+    state is built, so a merchant that read fine in this sweep is never overdue
+    however late the sweep itself ran. A hand-keyed rate has no rhythm to miss.
+    """
+    if rate.get("manual") or not rate.get("fetched"):
+        return False
+    if not (rate.get("buy24") or rate.get("buy22")):
+        return False
+    hours = src.get("proxyAfterHours")
+    every = hours * 60 if hours else READ_EVERY_MINUTES
+    try:
+        age = datetime.now(IST) - datetime.fromisoformat(rate["fetched"])
+    except Exception:
+        return False
+    return age.total_seconds() > (every + READ_GRACE_MINUTES) * 60
+
+
 def board_state():
     cfg = load_merchants()
     with _lock:
@@ -718,6 +744,11 @@ def board_state():
             elif rate["buy24"] and not rate["buy22"]:
                 rate["buy22"] = round(rate["buy24"] * K22_FROM_K24, 2)
                 rate["derived22"] = True
+
+        # Always recomputed: a seed carried over from rates.json may hold an old flag.
+        rate.pop("overdue", None)
+        if is_overdue(rate, m.get("source") or {}):
+            rate["overdue"] = True
 
         hist = board["history"].get(mid) or []
         rows.append({
