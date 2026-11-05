@@ -46,6 +46,12 @@ TEST = bool(os.environ.get("KB_ALERT_TEST"))
 STALE_OK_H = float(os.environ.get("KB_ALERT_STALE_H") or 6)
 
 
+def _suspect(rate):
+    """Overdue for a read (red on the board): the number can't be trusted, on
+    either side of a comparison. A manual test run keeps them, as it does stale."""
+    return bool(rate.get("overdue")) and not TEST
+
+
 def _age_h(iso):
     try:
         from datetime import datetime, timezone
@@ -82,7 +88,7 @@ def find_deals(state, pct):
     for bid in BASELINES:
         b = by_id.get(bid) or {}
         r = b.get("rate") or {}
-        if r.get("buy24"):
+        if r.get("buy24") and not _suspect(r):
             bases.append((b.get("short") or bid, r))
     if not bases:
         print("alert: no baseline (Kalyan/Lalithaa) rate this build - nothing to compare")
@@ -92,6 +98,8 @@ def find_deals(state, pct):
         if m["id"] in BASELINES:
             continue
         r = m.get("rate") or {}
+        if _suspect(r):
+            continue
         # A stale tile is last build's number, not today's offer: the gap it
         # shows is against a Kalyan that has since moved. Not worth a trip.
         # KB_ALERT_TEST lets a manual test run include them (message says TEST).
@@ -137,6 +145,7 @@ def compose(deals, pct, built, rates):
     """
     by_id = {m["id"]: m for m in rates.get("merchants", [])}
     base_rates = {bid: (by_id.get(bid) or {}).get("rate") or {} for bid in BASELINES}
+    base_rates = {bid: ({} if _suspect(r) else r) for bid, r in base_rates.items()}
     base_names = {bid: (by_id.get(bid) or {}).get("short") or bid for bid in BASELINES}
 
     by_merchant = {}
