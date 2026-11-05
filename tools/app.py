@@ -169,7 +169,8 @@ def now_iso():
 #  Fetching
 # --------------------------------------------------------------------------- #
 def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params="",
-          proxy_ok=True, proxy_max=3, headers=None, who="?", ca=None):
+          proxy_ok=True, proxy_max=3, headers=None, who="?", ca=None,
+          proxy_first=False):
     """Return the raw bytes of a page.
 
     If the site refuses this IP and a proxy is configured, the request is made
@@ -180,19 +181,25 @@ def fetch(url, mode="urllib", timeout=40, retry=True, proxy_params="",
     however honest the headers look, but let Windows' own curl.exe straight
     through. So the fetch mode is per-merchant config, not a global choice.
     """
-    try:
-        return _fetch_once(url, mode, timeout, headers, ca)
-    except Refused:
-        if not (retry and PROXY_URL and PROXY_KEY):
-            raise
-        # Proxy credits are not all priced alike: an ordinary fetch is about a
-        # credit, a residential one with a browser behind it nearer twenty-five,
-        # so a merchant on the dear route is rationed. The ration is measured in
-        # time SINCE THE LAST ATTEMPT, never against the clock: GitHub's cron
-        # drifts, a job scheduled for 00:00 lands at 01:11, and an hour-modulo
-        # gate then skips the very slot it was meant to allow.
-        if not proxy_ok:
-            raise
+    # proxyFirst: Bhima stopped refusing CI around 3 Nov 2026 and instead answers
+    # 200 with a page that has no rates in it for a non-Indian IP. Nothing is
+    # "refused", so the retry below never fires - go straight to the proxy's IN
+    # exit when its ration allows. Off-ration runs read direct, fail, and carry
+    # the last good rate, which costs nothing.
+    if not (proxy_first and proxy_ok and retry and PROXY_URL and PROXY_KEY):
+        try:
+            return _fetch_once(url, mode, timeout, headers, ca)
+        except Refused:
+            if not (retry and PROXY_URL and PROXY_KEY):
+                raise
+            # Proxy credits are not all priced alike: an ordinary fetch is about a
+            # credit, a residential one with a browser behind it nearer twenty-five,
+            # so a merchant on the dear route is rationed. The ration is measured in
+            # time SINCE THE LAST ATTEMPT, never against the clock: GitHub's cron
+            # drifts, a job scheduled for 00:00 lands at 01:11, and an hour-modulo
+            # gate then skips the very slot it was meant to allow.
+            if not proxy_ok:
+                raise
 
     # Refused, and a proxy is available. Sites differ in how hard they are:
     # Bhima is happy with the proxy's ordinary pool, Tanishq refuses that too and
@@ -369,7 +376,8 @@ def read_merchant(m, proxy_ok=True):
                 proxy_ok=proxy_ok,
                 proxy_max=int(src.get("proxyMaxAttempts") or 3),
                 headers=src.get("headers"),
-                ca=src.get("caFile"))
+                ca=src.get("caFile"),
+                proxy_first=bool(src.get("proxyFirst")))
 
     if adapter == "text_regex":
         body = to_text(raw)
