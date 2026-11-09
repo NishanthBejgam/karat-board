@@ -35,6 +35,18 @@
       "above": 75.0,
       "repeat_h": 24,
       "rise_pts": 2.0
+    },
+    {
+      "id": "whichbike-coupon-10k",
+      "enabled": true,
+      "title": "🏍️ WHICHBIKE: BIG COUPON ON AMAZON",
+      "source": "whichbike",
+      "url": "https://whichbike.in/bikes.json",
+      "link": "https://whichbike.in",
+      "rule": "coupon_above",
+      "above": 10000,
+      "repeat_h": 24,
+      "rise_pts": 1000
     }
   ]
 }

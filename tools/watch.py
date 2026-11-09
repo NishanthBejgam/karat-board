@@ -117,7 +117,66 @@ def src_brands(w):
     return out
 
 
-SOURCES = {"giftdeals": src_giftdeals, "brands": src_brands}
+def _inr(v):
+    """Indian grouping, as on WhichBike: 2,35,000."""
+    s = "%d" % round(v)
+    if len(s) <= 3:
+        return s
+    head, tail = s[:-3], s[-3:]
+    groups = []
+    while len(head) > 2:
+        groups.insert(0, head[-2:])
+        head = head[:-2]
+    return ",".join([head] + groups + [tail])
+
+
+def _wb_bank(b, price):
+    """WhichBike's bankAmount(): base (pct capped, or flat) + every tier reached."""
+    base = b.get("base") or {}
+    if not base or price < (base.get("min") or 0):
+        return 0.0
+    v = price * base["pct"] / 100.0 if base.get("pct") is not None else (base.get("flat") or 0)
+    if base.get("cap"):
+        v = min(v, base["cap"])
+    return v + sum(t.get("flat") or 0 for t in b.get("tiers") or [] if price >= (t.get("min") or 0))
+
+
+def src_whichbike(w):
+    """WhichBike's Amazon listing coupons (value = coupon in rupees), each with
+    the board's Amazon Pay route as the broadcast card shows it: listed price -
+    coupon - any-card instant - Amazon Pay back (Prime rate) = final."""
+    d = fetch(w["url"])
+    o = d.get("offers") or {}
+    pay_by, sets, by_model = o.get("payByModel") or {}, o.get("sets") or {}, o.get("byModel") or {}
+    out = []
+    for m in d.get("models", []):
+        a = (m.get("stores") or {}).get("amazon") or {}
+        info = pay_by.get(m["id"]) or {}
+        cp = info.get("coupon") or {}
+        if not (a.get("inStock") and a.get("from")) or not cp:
+            continue
+        price = a["from"]
+        coupon = cp["flat"] if "flat" in cp else price * cp.get("pct", 0) / 100.0
+        net = price - coupon
+        anyc = max([_wb_bank(b, net) for b in sets.get(by_model.get(m["id"]), [])
+                    if b.get("bank") == "Any card" and not b.get("emi")] or [0])
+        net -= anyc
+        ap = info.get("apay") or {}
+        pct = ap.get("prime") or ap.get("pct") or 0
+        back = round(net * pct / 100.0) if pct else 0
+        parts = ["₹%s" % _inr(price), "− ₹%s coupon" % _inr(coupon)]
+        if anyc:
+            parts.append("− ₹%s any card" % _inr(anyc))
+        if back:
+            parts.append("− ₹%s %g%% Amazon Pay ↺" % (_inr(back), pct))
+        url = next((l.get("url") for l in m.get("listings") or [] if l.get("asin") == a.get("best")), None)
+        out.append({"key": m["id"], "name": "%s %s" % (m["maker"], m["model"]), "value": round(coupon),
+                    "url": url and url.replace("&", "&amp;"), "note": " ".join(parts) + " = <b>₹%s</b>" % _inr(net - back) +
+                    (" (Amazon Pay ICICI, Prime)" if back else "")})
+    return out
+
+
+SOURCES = {"giftdeals": src_giftdeals, "brands": src_brands, "whichbike": src_whichbike}
 
 
 # -------------------------------------------------------------------- rules
@@ -140,7 +199,12 @@ def rule_jump(w, it, hist):
         return "%s%% off · usual %s%% (%d-day avg)" % (_pct(it["value"]), _pct(avg), len(past))
 
 
-RULES = {"above": rule_above, "jump": rule_jump}
+def rule_coupon(w, it, hist):
+    if it["value"] >= w["above"]:
+        return "<b>Coupon ₹%s</b> - tick Apply coupon on the listing" % _inr(it["value"])
+
+
+RULES = {"above": rule_above, "coupon_above": rule_coupon, "jump": rule_jump}
 KEEPS_HISTORY = {"jump"}
 
 
@@ -216,7 +280,9 @@ def run_watch(w, state, now):
     if TEST:
         firing = sorted(items, key=lambda i: -i["value"])[:3]
         for it in firing:
-            it["why"] = "%s%% off (test pick, not a trigger)" % _pct(it["value"])
+            it["why"] = ("Coupon ₹%s (test pick, not a trigger)" % _inr(it["value"])
+                         if w["rule"] == "coupon_above"
+                         else "%s%% off (test pick, not a trigger)" % _pct(it["value"]))
     else:
         on = {it["key"] for it in firing}
         for k in [k for k in sent if k not in on]:  # stopped firing: forget it
