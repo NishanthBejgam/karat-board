@@ -23,6 +23,7 @@ Environment:
   KB_WATCH_TEST               1 = send each watch's top 3 now, marked TEST
 """
 
+import datetime
 import io
 import json
 import os
@@ -39,9 +40,9 @@ TEST = os.environ.get("KB_WATCH_TEST") == "1"
 IST = 5.5 * 3600
 
 
-def fetch(url):
+def fetch(url, headers=None):
     req = urllib.request.Request(url, headers={
-        "Cache-Control": "no-cache", "User-Agent": "karat-board-watch"})
+        "Cache-Control": "no-cache", "User-Agent": "karat-board-watch", **(headers or {})})
     with urllib.request.urlopen(req, timeout=30) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
@@ -176,7 +177,65 @@ def src_whichbike(w):
     return out
 
 
-SOURCES = {"giftdeals": src_giftdeals, "brands": src_brands, "whichbike": src_whichbike}
+def _amazon_card(coin, banks, per_coin):
+    """AmazonGold's cardFor() on the listed price, for the best bank on this piece."""
+    if coin.get("type") in ("coin", "bar"):        # Amazon: no bank offer on bullion
+        return 0.0
+    price, best = coin["price"], 0.0
+    for b in banks:
+        base = b.get("base")
+        if not base or price < (base.get("min") or 0):
+            continue
+        if per_coin and b.get("bank") not in (coin.get("banks") or []):
+            continue
+        v = price * base["pct"] / 100.0 if base.get("pct") is not None else (base.get("flat") or 0)
+        if base.get("cap"):
+            v = min(v, base["cap"])
+        v += sum(t.get("flat") or 0 for t in b.get("tiers") or [] if price >= (t.get("min") or 0))
+        best = max(best, min(v, price))
+    return best
+
+
+def src_goldboard(w):
+    """The Difference column of AmazonGold / FlipkartGold: gold worth at the board's
+    default rate, minus listed price less the best card. A locked board stops
+    being rebuilt, so old data reads as nothing to report."""
+    headers = {}
+    if w.get("key_env"):
+        key = os.environ.get(w["key_env"])
+        if not key:
+            raise RuntimeError("%s not set" % w["key_env"])
+        headers["X-Push-Key"] = key
+    d = fetch(w["url"], headers)
+    built = datetime.datetime.strptime(d["builtAt"], "%Y-%m-%dT%H:%M:%S%z").timestamp()
+    if time.time() - built > w.get("max_age_h", 6) * 3600:
+        print("watch %s: board is %.1f h old - skipped" % (w["id"], (time.time() - built) / 3600))
+        return []
+    rates = d["rates"]
+    ref = next((m["buy24"] for m in rates["merchants"] if m["id"] == rates.get("defaultId")),
+               rates["median24"])
+    offers = d.get("offers") or {}
+    banks, per_coin = offers.get("banks") or [], offers.get("perCoin")
+    amazon = w.get("store") == "amazon"
+    out = []
+    for c in d.get("coins", []):
+        if not c.get("inStock") or not c.get("price") or not c.get("grams"):
+            continue
+        purity = 0.916 if c.get("karat") == 22 else 1.0
+        if amazon and c.get("karat") == 24 and re.search(r"\b995\b", c.get("name") or ""):
+            purity = 995 / 999.0
+        card = (_amazon_card(c, banks, per_coin) if amazon
+                else min(max((c.get("bo") or {"": 0}).values()), c["price"]))
+        pay = c["price"] - card
+        worth = ref * purity * c["grams"]
+        out.append({"name": c.get("name") or c["id"], "value": round(worth - pay)})
+    # Only the board's top two rows go to the admin: name and arbitrage.
+    top = sorted(out, key=lambda i: -i["value"])[:2]
+    return [dict(it, key="deal%d" % (n + 1)) for n, it in enumerate(top)]
+
+
+SOURCES = {"giftdeals": src_giftdeals, "brands": src_brands, "whichbike": src_whichbike,
+           "goldboard": src_goldboard}
 
 
 # -------------------------------------------------------------------- rules
@@ -204,7 +263,13 @@ def rule_coupon(w, it, hist):
         return "<b>Coupon ₹%s</b> - tick Apply coupon on the listing" % _inr(it["value"])
 
 
-RULES = {"above": rule_above, "coupon_above": rule_coupon, "jump": rule_jump}
+def rule_under_gold(w, it, hist):
+    if it["value"] > w["above"]:
+        return "<b>Arbitrage ₹%s</b>" % _rs(it["value"])
+
+
+RULES = {"above": rule_above, "coupon_above": rule_coupon, "jump": rule_jump,
+         "under_gold": rule_under_gold}
 KEEPS_HISTORY = {"jump"}
 
 
@@ -282,6 +347,8 @@ def run_watch(w, state, now):
         for it in firing:
             it["why"] = ("Coupon ₹%s (test pick, not a trigger)" % _inr(it["value"])
                          if w["rule"] == "coupon_above"
+                         else "₹%s vs gold (test pick, not a trigger)" % _rs(it["value"])
+                         if w["rule"] == "under_gold"
                          else "%s%% off (test pick, not a trigger)" % _pct(it["value"]))
     else:
         on = {it["key"] for it in firing}

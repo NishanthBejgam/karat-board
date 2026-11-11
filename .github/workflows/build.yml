@@ -113,6 +113,8 @@ jobs:
           # Deal watches (tools/watch.py + watches.json): other boards' alerts
           # on the same bot. Day-by-day history read back off the live site.
           KB_WATCH_STATE_URL: https://karatboard.yourcardjourney.store/watch.json
+          # AmazonGold's board is keyed (Worker /board/raw).
+          AG_PUSH_KEY: ${{ secrets.AG_PUSH_KEY }}
           KB_WATCH_TEST: ${{ github.event.inputs.watch_test == 'true' && '1' || '' }}
         run: python tools/build_site.py _site
 

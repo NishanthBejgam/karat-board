@@ -10,6 +10,35 @@
   ],
   "watches": [
     {
+      "id": "amazongold-500",
+      "enabled": true,
+      "title": "🟢 AMAZON GOLD: POTENTIAL DEAL",
+      "source": "goldboard",
+      "store": "amazon",
+      "url": "https://amazongold.yourcardjourney.workers.dev/board/raw",
+      "key_env": "AG_PUSH_KEY",
+      "link": "https://amazongold.yourcardjourney.store",
+      "rule": "under_gold",
+      "above": 500,
+      "max_age_h": 6,
+      "repeat_h": 6,
+      "rise_pts": 200
+    },
+    {
+      "id": "flipkartgold-500",
+      "enabled": true,
+      "title": "🔵 FLIPKART GOLD: POTENTIAL DEAL",
+      "source": "goldboard",
+      "store": "flipkart",
+      "url": "https://flipkartgold.pages.dev/coins.json",
+      "link": "https://flipkartgold.yourcardjourney.store",
+      "rule": "under_gold",
+      "above": 500,
+      "max_age_h": 6,
+      "repeat_h": 6,
+      "rise_pts": 200
+    },
+    {
       "id": "giftdeals-jump",
       "enabled": true,
       "title": "🎁 GIFT CARD DISCOUNT JUMP",
